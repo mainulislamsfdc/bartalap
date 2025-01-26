@@ -1,15 +1,15 @@
 // sw.js
 const CACHE_NAME = 'bartalap1-v1';
 const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/app.js',
-    '/js/audioHandler.js',
-    '/js/translationService.js',
-    '/js/uiController.js',
-    '/images/icon-192x192.png',
-    '/images/icon-512x512.png'
+    '.',
+    './index.html',
+    './css/styles.css',
+    './js/app.js',
+    './js/audioHandler.js',
+    './js/translationService.js',
+    './js/uiController.js',
+    './images/icon-192x192.png',
+    './images/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
