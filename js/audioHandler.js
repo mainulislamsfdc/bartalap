@@ -25,7 +25,7 @@ class AudioHandler {
 
     setupRecognition() {
         this.recognition.continuous = true;
-        this.recognition.interimResults = true;
+        this.recognition.interimResults = false;
 
         this.recognition.onresult = (event) => {
             const result = event.results[event.results.length - 1];
