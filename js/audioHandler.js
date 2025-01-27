@@ -1,113 +1,120 @@
-// js/audioHandler.js
+// audioHandler.js
 class AudioHandler {
-    constructor() {
-        this.recognition = null;
-        this.isRecording = false;
-        this.wakeLock = null;
-        this.silenceTimer = null;
-    }
+  constructor() {
+      this.recognition = null;
+      this.isRecording = false;
+      this.currentText = '';
+      this.wordCount = 0;
+      this.MAX_WORDS = 12;
+      this.selectedLanguage = 'hi-IN';
+      this.transcriptionMode = 'local';
+  }
 
-    async initialize() {
-        try {
-            // Check for Speech Recognition support
-            if (!('webkitSpeechRecognition' in window)) {
-                throw new Error('Speech recognition not supported');
-            }
+  async initialize() {
+      try {
+          if (!('webkitSpeechRecognition' in window)) {
+              throw new Error('Speech recognition not supported');
+          }
 
-            this.recognition = new webkitSpeechRecognition();
-            this.setupRecognition();
-            return true;
-        } catch (error) {
-            console.error('Audio initialization error:', error);
-            return false;
-        }
-    }
+          this.recognition = new webkitSpeechRecognition();
+          this.setupContinuousRecognition();
+          return true;
+      } catch (error) {
+          console.error('Audio initialization error:', error);
+          return false;
+      }
+  }
 
-    setupRecognition() {
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
+  setTranscriptionMode(mode, selectedLanguage) {
+      this.transcriptionMode = mode;
+      this.selectedLanguage = selectedLanguage;
+      
+      if (this.recognition) {
+          this.recognition.lang = this.transcriptionMode === 'local' ? 
+              this.selectedLanguage : 'en-US';
+      }
+  }
 
-        this.recognition.onresult = (event) => {
-            const result = event.results[event.results.length - 1];
-            const transcript = result[0].transcript;
-            const isFinal = result.isFinal;
+  setupContinuousRecognition() {
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.lang = this.transcriptionMode === 'local' ? 
+          this.selectedLanguage : 'en-US';
 
-            // Dispatch custom event with the result
-            window.dispatchEvent(new CustomEvent('speechResult', {
-                detail: { transcript, isFinal }
-            }));
+      this.recognition.onresult = (event) => {
+          const result = event.results[event.results.length - 1];
+          const transcript = result[0].transcript;
+          
+          const words = transcript.trim().split(/\s+/);
+          this.wordCount = words.length;
 
-            // Reset silence timer
-            this.resetSilenceTimer();
-        };
+          if (this.wordCount >= this.MAX_WORDS || result.isFinal) {
+              this.processChunk(transcript, result.isFinal);
+              this.currentText = '';
+              this.wordCount = 0;
+          } else {
+              this.currentText = transcript;
+              window.dispatchEvent(new CustomEvent('interimResult', {
+                  detail: { text: transcript }
+              }));
+          }
+      };
 
-        this.recognition.onerror = (event) => {
-            console.error('Recognition error:', event.error);
-            this.stopRecording();
-        };
+      this.recognition.onerror = (event) => {
+          console.error('Recognition error:', event.error);
+          this.stopRecording();
+      };
 
-        this.recognition.onend = () => {
-            if (this.isRecording) {
-                this.recognition.start();
-            }
-        };
-    }
+      this.recognition.onend = () => {
+          if (this.isRecording) {
+              this.recognition.start();
+          }
+      };
+  }
 
-    async startRecording(languageCode) {
-        try {
-            if (this.isRecording) return;
+  processChunk(text, isFinal) {
+      window.dispatchEvent(new CustomEvent('speechResult', {
+          detail: {
+              transcript: text,
+              isFinal: isFinal
+          }
+      }));
+  }
 
-            // Request wake lock to keep screen active
-            try {
-                this.wakeLock = await navigator.wakeLock.request('screen');
-            } catch (err) {
-                console.log('Wake Lock not supported');
-            }
+  async startRecording(languageCode) {
+      try {
+          if (this.isRecording) return;
 
-            this.recognition.lang = languageCode;
-            await this.recognition.start();
-            this.isRecording = true;
-            this.resetSilenceTimer();
+          this.selectedLanguage = languageCode;
+          this.recognition.lang = this.transcriptionMode === 'local' ? 
+              languageCode : 'en-US';
 
-            // Dispatch recording state change event
-            window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { isRecording: true }
-            }));
+          await this.recognition.start();
+          this.isRecording = true;
 
-        } catch (error) {
-            console.error('Start recording error:', error);
-            this.stopRecording();
-        }
-    }
+          window.dispatchEvent(new CustomEvent('recordingStateChange', {
+              detail: { isRecording: true }
+          }));
 
-    async stopRecording() {
-        try {
-            if (!this.isRecording) return;
+      } catch (error) {
+          console.error('Start recording error:', error);
+          this.stopRecording();
+      }
+  }
 
-            // Release wake lock
-            if (this.wakeLock) {
-                await this.wakeLock.release();
-                this.wakeLock = null;
-            }
+  async stopRecording() {
+      try {
+          if (!this.isRecording) return;
 
-            await this.recognition.stop();
-            this.isRecording = false;
-            clearTimeout(this.silenceTimer);
+          await this.recognition.stop();
+          this.isRecording = false;
 
-            // Dispatch recording state change event
-            window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { isRecording: false }
-            }));
+          window.dispatchEvent(new CustomEvent('recordingStateChange', {
+              detail: { isRecording: false }
+          }));
 
-        } catch (error) {
-            console.error('Stop recording error:', error);
-        }
-    }
-
-    resetSilenceTimer() {
-        clearTimeout(this.silenceTimer);
-        this.silenceTimer = setTimeout(() => {
-            this.stopRecording();
-        }, 60000); // 60 seconds silence timeout
-    }
+      } catch (error) {
+          console.error('Stop recording error:', error);
+      }
+  }
 }

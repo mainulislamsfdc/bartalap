@@ -1,4 +1,4 @@
-// js/uiController.js
+// uiController.js
 class UIController {
     constructor() {
         this.micButton = document.getElementById('micButton');
@@ -7,6 +7,15 @@ class UIController {
         this.languageSelect = document.getElementById('languageSelect');
         this.currentText = document.getElementById('currentText');
         this.translationHistory = document.getElementById('translationHistory');
+
+        const radioButtons = document.querySelectorAll('input[name="transcriptionMode"]');
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const mode = e.target.value;
+                const selectedLanguage = this.languageSelect.value;
+                this.onTranscriptionModeChange(mode, selectedLanguage);
+            });
+        });
     }
 
     updateRecordingState(isRecording) {
@@ -23,15 +32,21 @@ class UIController {
         const element = document.createElement('div');
         element.className = 'translation-item';
         element.innerHTML = `
+            <div class="timestamp">${new Date().toLocaleTimeString()}</div>
             <p><strong>Original:</strong> ${translation.original}</p>
             <p><strong>Translation:</strong> ${translation.translated}</p>
-            <small>${translation.timestamp.toLocaleString()}</small>
         `;
         this.translationHistory.insertBefore(element, this.translationHistory.firstChild);
     }
 
-        clearTranslations() {
+    clearTranslations() {
         this.translationHistory.innerHTML = '';
         this.currentText.innerHTML = '<p class="placeholder">Press the microphone to start...</p>';
+    }
+
+    onTranscriptionModeChange(mode, selectedLanguage) {
+        window.dispatchEvent(new CustomEvent('transcriptionModeChange', {
+            detail: { mode, selectedLanguage }
+        }));
     }
 }
