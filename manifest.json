@@ -1,6 +1,6 @@
 {
     "name": "Bartalap1 - Real-time Translator",
-    "short_name": "Bartalap1",
+    "short_name": "Bartalap",
     "description": "Real-time speech translation app",
     "start_url": ".",
     "display": "standalone",
