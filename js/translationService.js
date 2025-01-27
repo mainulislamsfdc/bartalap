@@ -1,7 +1,10 @@
 // js/translationService.js
 class TranslationService {
     constructor() {
-        this.apiKey = 'AIzaSyBK9GgQz_gmNTTh7MSHgnce_rhq2X_0NRE';
+        if (!window.appConfig?.apiKeys?.translation) {
+            throw new Error('API key not configured');
+        }
+        this.apiKey = window.appConfig.apiKeys.translation;
         this.translations = [];
     }
 

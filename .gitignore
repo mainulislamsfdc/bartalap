@@ -1,3 +1,5 @@
-node_modules/
-.DS_Store
+# .gitignore
+config.js
+.env
 *.log
+node_modules/
