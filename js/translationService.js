@@ -1,12 +1,20 @@
 // js/translationService.js
+import config from './config.js';
 class TranslationService {
-    constructor() {
+    /*constructor() {
         if (!window.appConfig?.apiKeys?.translation) {
             throw new Error('API key not configured');
         }
         this.apiKey = window.appConfig.apiKeys.translation;
         this.translations = [];
-    }
+    }*/
+
+        constructor() {
+            this.apiKey = config.apiKey;
+            if (!this.apiKey) {
+            throw new Error('Translation service requires an API key');
+            }
+        }
 
     async translateText(text, sourceLang, targetLang = 'en') {
         try {
