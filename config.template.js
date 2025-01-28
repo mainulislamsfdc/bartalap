@@ -1,5 +1,5 @@
 window.appConfig = {
     apiKeys: {
-        translation: 'YOUR_API_KEY_HERE'  // Just a placeholder
+        translation: 'API_KEY'  // Just a placeholder
     }
 };
