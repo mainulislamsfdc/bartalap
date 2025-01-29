@@ -1,11 +1,10 @@
 // app.js
-//import TranslationService from './translationService.js';
+import { TranslationService } from './translationService.js';
 class App {
     constructor() {
         this.audioHandler = new AudioHandler();
         this.translationService = new TranslationService();
         this.uiController = new UIController();
-        
         this.initialize();
         this.setupEventListeners();
     }
