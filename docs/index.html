@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bartalap-Bridging societies</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="./css/styles.css">
+    <meta name="theme-color" content="#2196F3">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Bartalap-Bridging societies</h1>
+            <div class="language-controls">
+                <select id="languageSelect" class="language-select">
+                    <option value="hi-IN">Hindi</option>
+                    <option value="bn-IN">Bengali</option>
+                    <option value="kn-IN">Kannada</option>
+                    <option value="ta-IN">Tamil</option>
+                    <option value="te-IN">Telugu</option>
+                    <option value="ml-IN">Malayalam</option>
+                </select>
+                
+                <div class="transcription-mode">
+                    <label>
+                        <input type="radio" name="transcriptionMode" value="local" checked>
+                        Local Language
+                    </label>
+                    <label>
+                        <input type="radio" name="transcriptionMode" value="english">
+                        English
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <div class="translation-container">
+            <div id="currentText" class="current-text"></div>
+            <div id="translationHistory" class="translation-history"></div>
+        </div>
+
+        <div class="controls">
+            <button id="micButton" class="mic-button">
+                <span class="mic-icon">🎤</span>
+            </button>
+            <button id="clearButton" class="clear-button">Clear</button>
+            <button id="exportButton" class="export-button">Export</button>
+        </div>
+    </div>
+    <script type="module" src="./dist/bundle.js"></script>     
+</body>
+</html>

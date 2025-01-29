@@ -1,5 +1,4 @@
 // app.js
-import { TranslationService } from './translationService.js';
 class App {
     constructor() {
         this.audioHandler = new AudioHandler();
