@@ -1,0 +1,31 @@
+/* css/themes.css */
+:root {
+    --primary-color: #2196F3;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #eeeeee;
+    --card-background: #ffffff;
+}
+
+.dark-theme {
+    --primary-color: #64B5F6;
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #333333;
+    --card-background: #2d2d2d;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.entry {
+    background-color: var(--card-background);
+    border-color: var(--border-color);
+}
+
+.timestamp {
+    color: var(--text-color);
+    opacity: 0.7;
+}
