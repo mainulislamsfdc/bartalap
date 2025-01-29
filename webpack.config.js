@@ -33,9 +33,10 @@ export default {
     ]
   },
   plugins: [
-    new Dotenv(),
+    // Use DefinePlugin to inject environment variables
     new webpack.DefinePlugin({
       'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
     }),
     new CopyWebpackPlugin({
       patterns: [

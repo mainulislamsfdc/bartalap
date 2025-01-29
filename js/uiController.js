@@ -1,5 +1,5 @@
 // uiController.js
-class UIController {
+export default class UIController {
     constructor() {
         this.micButton = document.getElementById('micButton');
         this.clearButton = document.getElementById('clearButton');

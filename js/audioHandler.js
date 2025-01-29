@@ -1,5 +1,5 @@
 // audioHandler.js
-class AudioHandler {
+export default class AudioHandler {
   constructor() {
       this.recognition = null;
       this.isRecording = false;

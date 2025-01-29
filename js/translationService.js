@@ -1,24 +1,25 @@
-// js/translationService.js
-//import config from './config.js';
+// translationService.js
 export default class TranslationService {
-    /*constructor() {
-        if (!window.appConfig?.apiKeys?.translation) {
-            throw new Error('API key not configured');
+    constructor() {
+        // Get API key from webpack-injected environment variable
+        this.apiKey = process.env.API_KEY;
+        
+        if (!this.apiKey) {
+            console.error('API key not found. Some features may be limited.');
+            // Don't throw error, set a flag instead
+            this.isConfigured = false;
+        } else {
+            this.isConfigured = true;
         }
-        this.apiKey = window.appConfig.apiKeys.translation;
+        
         this.translations = [];
-    }*/
-
-        constructor() {
-            //this.apiKey = config.apiKey;
-            //this.apiKey = process.env.API_KEY; // Use environment variable
-            typeof process !== 'undefined' ? process.env.API_KEY : '';
-            if (!this.apiKey) {
-            throw new Error('Translation service requires an API key');
-            }
-        }
+    }
 
     async translateText(text, sourceLang, targetLang = 'en') {
+        if (!this.isConfigured) {
+            throw new Error('Translation service is not properly configured. Please check your API key.');
+        }
+
         try {
             const response = await fetch(
                 `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`,
@@ -35,6 +36,10 @@ export default class TranslationService {
                     })
                 }
             );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
             if (data.error) {

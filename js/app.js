@@ -1,5 +1,7 @@
 // app.js
 import TranslationService from './translationService.js';
+import AudioHandler from './audioHandler.js';
+import UIController from './uiController.js';
 class App {
     constructor() {
         this.audioHandler = new AudioHandler();
