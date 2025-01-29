@@ -2,6 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 import Dotenv from 'dotenv-webpack';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,11 +32,17 @@ export default {
       }
     ]
   },
-  mode: 'production',
   plugins: [
     new Dotenv(),
     new webpack.DefinePlugin({
       'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
     }),
-  ],
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'css', to: 'css' },
+        { from: 'images', to: 'images' },
+        { from: 'manifest.json', to: 'manifest.json' }
+      ]
+    })
+  ]
 }
