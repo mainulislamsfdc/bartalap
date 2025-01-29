@@ -33,7 +33,6 @@ export default {
     ]
   },
   plugins: [
-    // Use DefinePlugin to inject environment variables
     new webpack.DefinePlugin({
       'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
@@ -42,7 +41,8 @@ export default {
       patterns: [
         { from: 'css', to: 'css' },
         { from: 'images', to: 'images' },
-        { from: 'manifest.json', to: 'manifest.json' }
+        { from: 'manifest.json', to: 'manifest.json' },
+        { from: 'sw.js', to: 'sw.js' }  // Copy service worker
       ]
     })
   ]

@@ -91,6 +91,8 @@ class App {
             this.audioHandler.setTranscriptionMode(mode, selectedLanguage);
         });
     }
+
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
