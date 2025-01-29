@@ -1,5 +1,5 @@
 // js/translationService.js
-import config from './config.js';
+//import config from './config.js';
 class TranslationService {
     /*constructor() {
         if (!window.appConfig?.apiKeys?.translation) {
@@ -10,7 +10,8 @@ class TranslationService {
     }*/
 
         constructor() {
-            this.apiKey = config.apiKey;
+            //this.apiKey = config.apiKey;
+            this.apiKey = process.env.API_KEY; // Use environment variable
             if (!this.apiKey) {
             throw new Error('Translation service requires an API key');
             }
