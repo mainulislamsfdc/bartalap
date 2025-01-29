@@ -11,7 +11,8 @@ class TranslationService {
 
         constructor() {
             //this.apiKey = config.apiKey;
-            this.apiKey = process.env.API_KEY; // Use environment variable
+            //this.apiKey = process.env.API_KEY; // Use environment variable
+            typeof process !== 'undefined' ? process.env.API_KEY : '';
             if (!this.apiKey) {
             throw new Error('Translation service requires an API key');
             }
@@ -81,4 +82,4 @@ class TranslationService {
         window.URL.revokeObjectURL(url);
     }
 }
-//export default TranslationService;
+export default TranslationService;
