@@ -1,14 +1,19 @@
-const path = require('path');
-const Dotenv = require('dotenv-webpack');
+import path from 'path';
+import Dotenv from 'dotenv-webpack';
+import { fileURLToPath } from 'url';
 
-module.exports = {
-  entry: './js/app.js', // Main entry point for your app
+// Fix __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default {
+  entry: './js/app.js',  // Ensure correct entry path
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },
-  mode: 'production', // Use 'development' or 'production'
+  mode: 'production',
   plugins: [
-    new Dotenv(), // Load environment variables from .env
+    new Dotenv(), // Automatically loads environment variables from .env
   ],
 };
