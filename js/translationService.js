@@ -81,4 +81,4 @@ class TranslationService {
         window.URL.revokeObjectURL(url);
     }
 }
-export default TranslationService;
+//export default TranslationService;

@@ -1,19 +1,22 @@
 import path from 'path';
-import Dotenv from 'dotenv-webpack';
 import { fileURLToPath } from 'url';
+import webpack from 'webpack';
+import Dotenv from 'dotenv-webpack';
 
-// Fix __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  entry: './js/app.js',  // Ensure correct entry path
+  entry: './js/app.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
   },
   mode: 'production',
   plugins: [
-    new Dotenv(), // Automatically loads environment variables from .env
+    new Dotenv(),
+    new webpack.DefinePlugin({
+      'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
+    }),
   ],
 };
