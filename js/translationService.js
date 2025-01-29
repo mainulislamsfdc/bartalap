@@ -1,6 +1,6 @@
 // js/translationService.js
 //import config from './config.js';
-class TranslationService {
+export default class TranslationService {
     /*constructor() {
         if (!window.appConfig?.apiKeys?.translation) {
             throw new Error('API key not configured');

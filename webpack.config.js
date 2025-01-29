@@ -9,9 +9,27 @@ const __dirname = path.dirname(__filename);
 export default {
   entry: './js/app.js',
   output: {
-    path: path.resolve(__dirname, 'docs'), // Changed from 'dist' to 'docs'
+    path: path.resolve(__dirname, 'docs'),
     filename: 'bundle.js',
-    publicPath: './' // This ensures assets are loaded correctly on GitHub Pages
+    publicPath: './'
+  },
+  resolve: {
+    extensions: ['.js'],
+    modules: ['node_modules']
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      }
+    ]
   },
   mode: 'production',
   plugins: [
