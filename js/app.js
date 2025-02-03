@@ -52,6 +52,12 @@ class App {
             this.translationService.exportTranslations();
         });
 
+        
+        window.addEventListener('languageChange', (event) => {
+            const { sourceLang, targetLang } = event.detail;
+            this.audioHandler.setLanguages(sourceLang, targetLang);
+        });
+
         window.addEventListener('speechResult', async (event) => {
             const { transcript, isFinal } = event.detail;
             
@@ -59,13 +65,13 @@ class App {
 
             if (isFinal) {
                 try {
-                    const selectedLanguage = this.uiController.languageSelect.value;
-                    const sourceLang = selectedLanguage.split('-')[0];
+                    const sourceLang = this.uiController.sourceLanguageSelect.value;
+                    const targetLang = this.uiController.targetLanguageSelect.value;
                     
                     const translation = await this.translationService.translateText(
                         transcript,
                         sourceLang,
-                        'en'
+                        targetLang
                     );
 
                     this.uiController.addTranslation({
@@ -80,6 +86,7 @@ class App {
                 }
             }
         });
+    
 
         window.addEventListener('recordingStateChange', (event) => {
             const { isRecording } = event.detail;

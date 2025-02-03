@@ -4,53 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bartalap-Bridging societies</title>
-    <!-- Update paths to be relative -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./css/styles.css">
-    <link rel="icon" type="image/png" sizes="192x192" href="./images/icon-192x192.png">
+    <link rel="manifest" href="/bartalap_web1/manifest.json">
+    <link rel="stylesheet" href="/bartalap_web1/css/styles.css">
     <meta name="theme-color" content="#2196F3">
 </head>
 <body>
     <div class="app-container">
-        <header>
-            <h1>Bartalap-Bridging societies</h1>
-            <div class="language-controls">
-                <select id="languageSelect" class="language-select">
-                    <option value="hi-IN">Hindi</option>
-                    <option value="bn-IN">Bengali</option>
-                    <option value="kn-IN">Kannada</option>
-                    <option value="ta-IN">Tamil</option>
-                    <option value="te-IN">Telugu</option>
-                    <option value="ml-IN">Malayalam</option>
-                </select>
-                
-                <div class="transcription-mode">
-                    <label>
-                        <input type="radio" name="transcriptionMode" value="local" checked>
-                        Local Language
-                    </label>
-                    <label>
-                        <input type="radio" name="transcriptionMode" value="english">
-                        English
-                    </label>
+        <div class="content-wrapper">
+            <header class="app-header">
+                <h1>Bartalap-Bridging societies</h1>
+                <div class="language-controls">
+                    <div class="language-selection">
+                        <div class="source-language">
+                            <label for="sourceLanguageSelect">Source Language:</label>
+                            <select id="sourceLanguageSelect" class="language-select">
+                                <option value="en-US">English</option>
+                                <option value="hi-IN">Hindi</option>
+                                <option value="bn-IN">Bengali</option>
+                                <option value="kn-IN">Kannada</option>
+                                <option value="ta-IN">Tamil</option>
+                                <option value="te-IN">Telugu</option>
+                                <option value="ml-IN">Malayalam</option>
+                            </select>
+                        </div>
+                        
+                        <div class="language-switcher">
+                            <button id="switchLanguages" class="switch-button" aria-label="Switch languages">
+                                <span>⇄</span>
+                            </button>
+                        </div>
+
+                        <div class="target-language">
+                            <label for="targetLanguageSelect">Target Language:</label>
+                            <select id="targetLanguageSelect" class="language-select">
+                                <option value="hi-IN">Hindi</option>
+                                <option value="bn-IN">Bengali</option>
+                                <option value="kn-IN">Kannada</option>
+                                <option value="ta-IN">Tamil</option>
+                                <option value="te-IN">Telugu</option>
+                                <option value="ml-IN">Malayalam</option>
+                                <option value="en-US">English</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
 
-        <div class="translation-container">
-            <div id="currentText" class="current-text"></div>
-            <div id="translationHistory" class="translation-history"></div>
-        </div>
+            <main class="translation-container">
+                <div class="current-text-wrapper">
+                    <div id="currentText" class="current-text">
+                        <p class="placeholder">Press the microphone button to start speaking...</p>
+                    </div>
+                </div>
+                <div id="translationHistory" class="translation-history">
+                    <!-- Translation items will be added here dynamically -->
+                </div>
+            </main>
 
-        <div class="controls">
-            <button id="micButton" class="mic-button">
-                <span class="mic-icon">🎤</span>
-            </button>
-            <button id="clearButton" class="clear-button">Clear</button>
-            <button id="exportButton" class="export-button">Export</button>
+            <footer class="controls">
+                <div class="control-buttons">
+                    <button id="clearButton" class="action-button clear-button">
+                        Clear History
+                    </button>
+                    <button id="micButton" class="mic-button" aria-label="Start/Stop recording">
+                        <span class="mic-icon">🎤</span>
+                    </button>
+                    <button id="exportButton" class="action-button export-button">
+                        Export
+                    </button>
+                </div>
+                <div class="status-indicator">
+                    <span id="recordingStatus" class="recording-status"></span>
+                </div>
+            </footer>
         </div>
     </div>
-    <!-- Update bundle path -->
-    <script type="module" src="./bundle.js"></script>
+
+    <!-- Add a loading indicator -->
+    <div id="loadingIndicator" class="loading-indicator hidden">
+        <div class="loader"></div>
+        <p>Processing...</p>
+    </div>
+
+    <!-- Error message container -->
+    <div id="errorMessage" class="error-message hidden">
+        <p></p>
+        <button class="close-button">✕</button>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/bartalap_web1/dist/bundle.js"></script>
 </body>
 </html>

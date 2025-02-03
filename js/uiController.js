@@ -1,12 +1,31 @@
 // uiController.js
 export default class UIController {
     constructor() {
-        this.micButton = document.getElementById('micButton');
-        this.clearButton = document.getElementById('clearButton');
-        this.exportButton = document.getElementById('exportButton');
-        this.languageSelect = document.getElementById('languageSelect');
-        this.currentText = document.getElementById('currentText');
-        this.translationHistory = document.getElementById('translationHistory');
+            this.micButton = document.getElementById('micButton');
+            this.clearButton = document.getElementById('clearButton');
+            this.exportButton = document.getElementById('exportButton');
+            this.sourceLanguageSelect = document.getElementById('sourceLanguageSelect');
+            this.targetLanguageSelect = document.getElementById('targetLanguageSelect');
+            this.currentText = document.getElementById('currentText');
+            this.translationHistory = document.getElementById('translationHistory');
+    
+            // Add event listeners for language switches
+            this.sourceLanguageSelect.addEventListener('change', () => {
+                const sourceLang = this.sourceLanguageSelect.value;
+                const targetLang = this.targetLanguageSelect.value;
+                this.onLanguageChange(sourceLang, targetLang);
+            });
+    
+            this.targetLanguageSelect.addEventListener('change', () => {
+                const sourceLang = this.sourceLanguageSelect.value;
+                const targetLang = this.targetLanguageSelect.value;
+                this.onLanguageChange(sourceLang, targetLang);
+            });
+        
+    
+        onLanguageChange(sourceLang, targetLang) 
+            window.dispatchEvent(new CustomEvent('languageChange', {detail: { sourceLang, targetLang }}));
+        
 
         const radioButtons = document.querySelectorAll('input[name="transcriptionMode"]');
         radioButtons.forEach(radio => {

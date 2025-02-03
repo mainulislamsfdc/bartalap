@@ -15,10 +15,13 @@ export default class TranslationService {
         this.translations = [];
     }
 
-    async translateText(text, sourceLang, targetLang = 'en') {
+    async translateText(text, sourceLang, targetLang) {
         if (!this.isConfigured) {
-            throw new Error('Translation service is not properly configured. Please check your API key.');
+            throw new Error('Translation service is not properly configured');
         }
+
+        const sourceCode = sourceLang.split('-')[0];
+        const targetCode = targetLang.split('-')[0];
 
         try {
             const response = await fetch(
@@ -49,9 +52,17 @@ export default class TranslationService {
             const translation = data.data.translations[0].translatedText;
             
             // Add to translations history
+            /*this.translations.push({
+                original: text,
+                translated: translation,
+                timestamp: new Date()
+            });*/
+
             this.translations.push({
                 original: text,
                 translated: translation,
+                sourceLang: sourceCode,
+                targetLang: targetCode,
                 timestamp: new Date()
             });
 
