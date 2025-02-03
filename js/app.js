@@ -2,6 +2,7 @@
 import TranslationService from './translationService.js';
 import AudioHandler from './audioHandler.js';
 import UIController from './uiController.js';
+
 class App {
     constructor() {
         this.audioHandler = new AudioHandler();
@@ -38,7 +39,7 @@ class App {
             if (this.audioHandler.isRecording) {
                 this.audioHandler.stopRecording();
             } else {
-                const selectedLanguage = this.uiController.languageSelect.value;
+                const selectedLanguage = this.uiController.sourceLanguageSelect.value;
                 this.audioHandler.startRecording(selectedLanguage);
             }
         });
@@ -52,7 +53,6 @@ class App {
             this.translationService.exportTranslations();
         });
 
-        
         window.addEventListener('languageChange', (event) => {
             const { sourceLang, targetLang } = event.detail;
             this.audioHandler.setLanguages(sourceLang, targetLang);
@@ -82,24 +82,16 @@ class App {
 
                 } catch (error) {
                     console.error('Translation error:', error);
-                    alert('Error during translation. Please try again.');
+                    this.uiController.showError('Error during translation. Please try again.');
                 }
             }
         });
-    
 
         window.addEventListener('recordingStateChange', (event) => {
             const { isRecording } = event.detail;
             this.uiController.updateRecordingState(isRecording);
         });
-
-        window.addEventListener('transcriptionModeChange', (event) => {
-            const { mode, selectedLanguage } = event.detail;
-            this.audioHandler.setTranscriptionMode(mode, selectedLanguage);
-        });
     }
-
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {

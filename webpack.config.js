@@ -7,16 +7,12 @@ import CopyWebpackPlugin from 'copy-webpack-plugin';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Get repository name from package.json for GitHub Pages
-const pkg = JSON.parse(await import('fs').then(fs => fs.promises.readFile('./package.json', 'utf8')));
-const repoName = pkg.name;
-
 export default {
   entry: './js/app.js',
   output: {
     path: path.resolve(__dirname, 'docs'),
     filename: 'bundle.js',
-    publicPath: `/${repoName}/`,  // Updated for GitHub Pages
+    publicPath: './',
     clean: true
   },
   resolve: {
@@ -54,38 +50,23 @@ export default {
       patterns: [
         { 
           from: 'index.html',
-          to: 'index.html',
-          transform(content) {
-            return content.toString()
-              .replace(/src="\.\//g, `src="/${repoName}/`)
-              .replace(/href="\.\//g, `href="/${repoName}/`);
-          }
+          to: 'index.html'
         },
         { 
           from: 'css',
-          to: 'css',
-          noErrorOnMissing: true 
+          to: 'css'
         },
         { 
           from: 'images',
-          to: 'images',
-          noErrorOnMissing: true
+          to: 'images'
         },
         { 
           from: 'manifest.json',
-          to: 'manifest.json',
-          transform(content) {
-            return content.toString()
-              .replace(/"\.\//g, `"/${repoName}/`);
-          }
+          to: 'manifest.json'
         },
         { 
           from: 'sw.js',
-          to: 'sw.js',
-          transform(content) {
-            return content.toString()
-              .replace(/'\.\//g, `'/${repoName}/`);
-          }
+          to: 'sw.js'
         }
       ]
     })
@@ -99,9 +80,6 @@ export default {
     open: true,
     historyApiFallback: true,
     hot: true
-  },
-  optimization: {
-    minimize: process.env.NODE_ENV === 'production'
   },
   mode: process.env.NODE_ENV || 'production'
 }
