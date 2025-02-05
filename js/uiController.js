@@ -59,18 +59,49 @@ export default class UIController {
     }
 
     updateCurrentText(text) {
-        this.currentText.innerHTML = `<p>${text}</p>`;
+        this.currentText.innerHTML = `
+            <div class="translation-pair">
+                <div class="translation-text original-text">${text}</div>
+            </div>
+        `;
     }
 
     addTranslation(translation) {
         const element = document.createElement('div');
         element.className = 'translation-item';
+        
+        // Get language names for better readability
+        const sourceLang = this.getLanguageName(this.sourceLanguageSelect.value);
+        const targetLang = this.getLanguageName(this.targetLanguageSelect.value);
+        
         element.innerHTML = `
             <div class="timestamp">${new Date().toLocaleTimeString()}</div>
-            <p><strong>Original:</strong> ${translation.original}</p>
-            <p><strong>Translation:</strong> ${translation.translated}</p>
+            <div class="translation-pair">
+                <div class="translation-text original-text">
+                    <strong>${sourceLang}:</strong><br>
+                    ${translation.original}
+                </div>
+                <div class="translation-text translated-text">
+                    <strong>${targetLang}:</strong><br>
+                    ${translation.translated}
+                </div>
+            </div>
         `;
+        
         this.translationHistory.insertBefore(element, this.translationHistory.firstChild);
+    }
+
+    getLanguageName(code) {
+        const languageMap = {
+            'en-US': 'English',
+            'hi-IN': 'Hindi',
+            'bn-IN': 'Bengali',
+            'kn-IN': 'Kannada',
+            'ta-IN': 'Tamil',
+            'te-IN': 'Telugu',
+            'ml-IN': 'Malayalam'
+        };
+        return languageMap[code] || code;
     }
 
     clearTranslations() {
