@@ -12,7 +12,7 @@ export default {
   output: {
     path: path.resolve(__dirname, 'docs'),
     filename: 'bundle.js',
-    publicPath: './',
+    publicPath: '',
     clean: true
   },
   resolve: {
@@ -54,15 +54,18 @@ export default {
         },
         { 
           from: 'css',
-          to: 'css'
+          to: 'css',
+          noErrorOnMissing: true
         },
         { 
           from: 'images',
-          to: 'images'
+          to: 'images',
+          noErrorOnMissing: true
         },
         { 
           from: 'favicon.ico',
-          to: 'favicon.ico'
+          to: 'favicon.ico',
+          noErrorOnMissing: true
         },
         { 
           from: 'manifest.json',
