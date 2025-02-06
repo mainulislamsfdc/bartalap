@@ -7,6 +7,11 @@ import CopyWebpackPlugin from 'copy-webpack-plugin';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Log environment variables for debugging
+console.log('Webpack build - Environment variables:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('API_KEY exists:', !!process.env.API_KEY);
+
 export default {
   entry: './js/app.js',
   output: {
@@ -38,13 +43,12 @@ export default {
     ]
   },
   plugins: [
+    // Use only Dotenv plugin for environment variables
     new Dotenv({
-      systemvars: true,
-      safe: true
-    }),
-    new webpack.DefinePlugin({
-      'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
+      systemvars: true, // Load all system variables
+      safe: true, // Load '.env.example' to verify the '.env' variables
+      defaults: true, // Load '.env.defaults' as the default values
+      debug: true // Show debug information
     }),
     new CopyWebpackPlugin({
       patterns: [
