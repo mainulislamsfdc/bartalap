@@ -78,7 +78,8 @@ class App {
 
                     this.uiController.addTranslation({
                         original: transcript,
-                        translated: translation,
+                        translated: translation.translation,  // Extract translated text
+                        transliteration: translation.pronunciation,  // Fix key name
                         timestamp: new Date()
                     });
 

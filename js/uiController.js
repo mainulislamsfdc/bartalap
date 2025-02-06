@@ -111,9 +111,10 @@ export default class UIController {
                     <strong>${targetLang}:</strong><br>
                     <div class="target-script">${translation.translated}</div>
                     ${
-                    translation.transliteration !== translation.translated
-                        ? `<div class="transliteration">(${translation.transliteration})</div>`
-                        : ""
+                      translation.transliteration && translation.transliteration !== translation.translated
+                      ? `<div class="transliteration">(${translation.transliteration})</div>`
+                      : ""
+
                     }
                 </div>
             </div>
