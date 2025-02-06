@@ -70,7 +70,6 @@ export default class UIController {
         const element = document.createElement('div');
         element.className = 'translation-item';
         
-        // Get language names for better readability
         const sourceLang = this.getLanguageName(this.sourceLanguageSelect.value);
         const targetLang = this.getLanguageName(this.targetLanguageSelect.value);
         
@@ -83,7 +82,10 @@ export default class UIController {
                 </div>
                 <div class="translation-text translated-text">
                     <strong>${targetLang}:</strong><br>
-                    ${translation.translated}
+                    <div class="target-script">${translation.translated}</div>
+                    ${translation.transliteration !== translation.translated ? 
+                        `<div class="transliteration">(${translation.transliteration})</div>` : 
+                        ''}
                 </div>
             </div>
         `;
