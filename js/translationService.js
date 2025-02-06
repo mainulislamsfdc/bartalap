@@ -15,46 +15,17 @@ export default class TranslationService {
         const targetCode = targetLang.split('-')[0];
 
         try {
-            // First translation: Source to target language
-            const translationResponse = await fetch(
-                `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        q: text,
-                        source: sourceCode,
-                        target: targetCode,
-                        format: 'text'
-                    })
-                }
+            // Single translation request with romanization
+            const response = await fetch(
+                `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}&target=${targetCode}&source=${sourceCode}&format=text&model=nmt&q=${encodeURIComponent(text)}`
             );
 
-            if (!translationResponse.ok) throw new Error(`HTTP error! status: ${translationResponse.status}`);
-            const translationData = await translationResponse.json();
-            const translation = translationData.data.translations[0].translatedText;
-
-            // Get the pronunciation for each word
-            const words = translation.split(' ');
-            const pronunciationPromises = words.map(word => 
-                fetch(
-                    `https://translation.googleapis.com/language/translate/v2/transliterate?key=${this.apiKey}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            q: word,
-                            target_language: 'en',
-                            source_language: targetCode
-                        })
-                    }
-                ).then(res => res.json())
-            );
-
-            const pronunciationResults = await Promise.all(pronunciationPromises);
-            const pronunciation = pronunciationResults
-                .map(result => result.data?.translations?.[0]?.translatedText || '')
-                .join(' ');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            
+            const translation = data.data.translations[0].translatedText;
+            // Get romanization if available
+            const pronunciation = data.data.translations[0].transliteration || translation;
 
             this.translations.push({
                 original: text,
