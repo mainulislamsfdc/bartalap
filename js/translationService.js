@@ -3,17 +3,10 @@ export default class TranslationService {
     constructor() {
         this.apiKey = process.env.API_KEY;
         this.isConfigured = !!this.apiKey;
-        if (!this.apiKey) {
-            console.warn('DEBUG: API key not found');
-        }
         this.translations = [];
     }
 
     async translateText(text, sourceLang, targetLang) {
-        console.log('DEBUG: Translation requested', {
-            text, sourceLang, targetLang, isConfigured: this.isConfigured
-        });
-
         if (!this.isConfigured) {
             throw new Error('Translation service not configured');
         }
@@ -22,13 +15,12 @@ export default class TranslationService {
         const targetCode = targetLang.split('-')[0];
 
         try {
-            const response = await fetch(
+            // First translation: Source language to target language
+            const firstResponse = await fetch(
                 `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`,
                 {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         q: text,
                         source: sourceCode,
@@ -38,25 +30,45 @@ export default class TranslationService {
                 }
             );
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!firstResponse.ok) throw new Error(`HTTP error! status: ${firstResponse.status}`);
+            const firstData = await firstResponse.json();
+            const translation = firstData.data.translations[0].translatedText;
 
-            const data = await response.json();
-            const translation = data.data.translations[0].translatedText;
+            // Second translation: Target language back to English for transliteration
+            const secondResponse = await fetch(
+                `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        q: translation,
+                        source: targetCode,
+                        target: 'en',
+                        format: 'text'
+                    })
+                }
+            );
+
+            if (!secondResponse.ok) throw new Error(`HTTP error! status: ${secondResponse.status}`);
+            const secondData = await secondResponse.json();
+            const transliteration = secondData.data.translations[0].translatedText;
 
             this.translations.push({
                 original: text,
                 translated: translation,
+                transliterated: transliteration,
                 sourceLang: sourceCode,
                 targetLang: targetCode,
                 timestamp: new Date()
             });
 
-            return translation;
+            return {
+                translation,
+                transliteration
+            };
 
         } catch (error) {
-            console.error('DEBUG: Translation error:', error);
+            console.error('Translation error:', error);
             throw error;
         }
     }
@@ -67,11 +79,12 @@ export default class TranslationService {
 
     exportTranslations() {
         const csv = [
-            ['Timestamp', 'Original', 'Translation'],
+            ['Timestamp', 'Original', 'Translation', 'Transliteration'],
             ...this.translations.map(t => [
                 t.timestamp.toISOString(),
                 t.original,
-                t.translated
+                t.translated,
+                t.transliterated
             ])
         ].map(row => row.join(',')).join('\n');
 
