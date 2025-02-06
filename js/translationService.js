@@ -1,3 +1,4 @@
+import { transliterate } from "transliteration";
 // translationService.js
 export default class TranslationService {
     constructor() {
@@ -6,52 +7,49 @@ export default class TranslationService {
         this.translations = [];
     }
 
-    async translateText(text, sourceLang, targetLang) {
-        if (!this.isConfigured) {
-            throw new Error('Translation service not configured');
-        }
-    
-        const sourceCode = sourceLang.split('-')[0];
-        const targetCode = targetLang.split('-')[0];
-    
-        try {
-            // Google Translate API call
-            const response = await fetch(
-                `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}&target=${targetCode}&source=${sourceCode}&format=text&model=nmt&q=${encodeURIComponent(text)}`
-            );
-    
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
-    
-            const translation = data.data.translations[0].translatedText;
-            let pronunciation = data.data.translations[0].transliteration || '';
-    
-            // If pronunciation is missing, fetch transliteration separately
-            if (!pronunciation) {
-                pronunciation = await this.getTransliteration(translation, targetCode);
-            }
-    
-            this.translations.push({
-                original: text,
-                translated: translation,
-                pronunciation,
-                sourceLang: sourceCode,
-                targetLang: targetCode,
-                timestamp: new Date()
-            });
-    
-            console.log(`DEBUG: Final output -> Translation: ${translation}, Pronunciation: ${pronunciation}`);
-    
-            return {
-                translation,
-                pronunciation
-            };
-    
-        } catch (error) {
-            console.error('Translation error:', error);
-            throw error;
-        }
+
+
+async translateText(text, sourceLang, targetLang) {
+    if (!this.isConfigured) {
+        throw new Error("Translation service not configured");
     }
+
+    const sourceCode = sourceLang.split("-")[0];
+    const targetCode = targetLang.split("-")[0];
+
+    try {
+        // Google Translate API
+        const response = await fetch(
+            `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}&target=${targetCode}&source=${sourceCode}&format=text&model=nmt&q=${encodeURIComponent(text)}`
+        );
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+
+        const translation = data.data.translations[0].translatedText;
+        let pronunciation = transliterate(translation); // Use manual transliteration
+
+        console.log(`DEBUG: Final output -> Translation: ${translation}, Pronunciation: ${pronunciation}`);
+
+        this.translations.push({
+            original: text,
+            translated: translation,
+            pronunciation,
+            sourceLang: sourceCode,
+            targetLang: targetCode,
+            timestamp: new Date(),
+        });
+
+        return {
+            translation,
+            pronunciation,
+        };
+    } catch (error) {
+        console.error("Translation error:", error);
+        throw error;
+    }
+}
+
     
     // Separate API request to Google Input Tools for transliteration
     async getTransliteration(text, targetLang) {
