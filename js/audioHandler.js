@@ -1,187 +1,165 @@
 // audioHandler.js
 export default class AudioHandler {
-  constructor() {
-      this.recognition = null;
-      this.isRecording = false;
-      this.currentText = "";
-      this.buffer = "";
-      this.lastProcessedTimestamp = Date.now();
-      this.CHUNK_INTERVAL = 5000; // Process every 5 seconds
-      this.processingTimeout = null;
-      this.sourceLang = "en-US";
-      this.targetLang = "hi-IN";
-  }
+    constructor() {
+        this.recognition = null;
+        this.isRecording = false;
+        this.buffer = "";
+        this.lastProcessedTimestamp = Date.now();
+        this.processingTimeout = null;
+        this.sourceLang = "en-US";
+        this.targetLang = "kn-IN";
+    }
 
-  setLanguages(sourceLang, targetLang) {
-      this.sourceLang = sourceLang;
-      this.targetLang = targetLang;
+    setLanguages(sourceLang, targetLang) {
+        console.log('DEBUG: Setting languages:', { sourceLang, targetLang });
+        this.sourceLang = sourceLang;
+        this.targetLang = targetLang;
 
-      if (this.recognition) {
-          this.recognition.lang = this.sourceLang;
-      }
-  }
+        if (this.recognition) {
+            this.recognition.lang = this.sourceLang;
+        }
+    }
 
-  async initialize() {
-      try {
-          if (!('webkitSpeechRecognition' in window)) {
-              throw new Error('Speech recognition not supported');
-          }
+    async initialize() {
+        try {
+            console.log('DEBUG: Initializing AudioHandler');
+            if (!('webkitSpeechRecognition' in window)) {
+                throw new Error('Speech recognition not supported');
+            }
 
-          this.recognition = new webkitSpeechRecognition();
-          this.setupContinuousRecognition();
-          return true;
-      } catch (error) {
-          console.error('Audio initialization error:', error);
-          return false;
-      }
-  }
+            this.recognition = new webkitSpeechRecognition();
+            this.setupContinuousRecognition();
+            console.log('DEBUG: AudioHandler initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('DEBUG: Audio initialization error:', error);
+            return false;
+        }
+    }
 
-  setupContinuousRecognition() {
-      this.recognition.continuous = true;
-      this.recognition.interimResults = false;
-      this.recognition.maxAlternatives = 1;
-      this.recognition.lang = this.sourceLang;
+    setupContinuousRecognition() {
+        console.log('DEBUG: Setting up continuous recognition');
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.maxAlternatives = 1;
+        this.recognition.lang = this.sourceLang;
 
-      this.recognition.onresult = (event) => {
-          let interimTranscript = '';
-          let finalTranscript = '';
+        this.recognition.onresult = (event) => {
+            console.log('DEBUG: Recognition result received');
+            let interimTranscript = '';
+            let finalTranscript = '';
 
-          // Collect all results
-          for (let i = 0; i < event.results.length; i++) {
-              const transcript = event.results[i][0].transcript;
-              if (event.results[i].isFinal) {
-                  finalTranscript += transcript;
-              } else {
-                  interimTranscript += transcript;
-              }
-          }
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    console.log('DEBUG: Final transcript:', transcript);
+                    finalTranscript += transcript;
+                    this.processChunk(transcript.trim(), true);
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
 
-          // Update buffer with final transcripts
-          if (finalTranscript) {
-              this.buffer += ' ' + finalTranscript;
-              this.checkAndProcessBuffer();
-          }
+            if (interimTranscript) {
+                console.log('DEBUG: Interim transcript:', interimTranscript);
+                this.processChunk(interimTranscript.trim(), false);
+            }
+        };
 
-          // Display interim results
-          if (interimTranscript) {
-              window.dispatchEvent(new CustomEvent('interimResult', {
-                  detail: { text: interimTranscript }
-              }));
-          }
-      };
+        this.recognition.onerror = (event) => {
+            console.error('DEBUG: Recognition error:', event.error);
+            if (event.error === 'no-speech' || event.error === 'audio-capture') {
+                this.restartRecognition();
+            } else {
+                this.stopRecording();
+            }
+        };
 
-      this.recognition.onerror = (event) => {
-          console.error('Recognition error:', event.error);
-          if (event.error === 'no-speech' || event.error === 'audio-capture') {
-              this.restartRecognition();
-          } else {
-              this.stopRecording();
-          }
-      };
+        this.recognition.onend = () => {
+            console.log('DEBUG: Recognition ended');
+            if (this.isRecording) {
+                console.log('DEBUG: Restarting recognition');
+                this.restartRecognition();
+            }
+        };
+    }
 
-      this.recognition.onend = () => {
-          // Process any remaining buffer before restarting
-          if (this.buffer.trim()) {
-              this.processChunk(this.buffer.trim(), true);
-              this.buffer = '';
-          }
-          
-          if (this.isRecording) {
-              this.restartRecognition();
-          }
-      };
-  }
+    processChunk(text, isFinal) {
+        if (text) {
+            console.log('DEBUG: Processing chunk:', { text, isFinal });
+            window.dispatchEvent(new CustomEvent('speechResult', {
+                detail: {
+                    transcript: text,
+                    isFinal: isFinal
+                }
+            }));
+        }
+    }
 
-  checkAndProcessBuffer() {
-      const now = Date.now();
-      
-      if (now - this.lastProcessedTimestamp >= this.CHUNK_INTERVAL || 
-          this.buffer.length > 1000) {
-          
-          clearTimeout(this.processingTimeout);
-          this.processChunk(this.buffer.trim(), false);
-          this.buffer = '';
-          this.lastProcessedTimestamp = now;
-      } else {
-          clearTimeout(this.processingTimeout);
-          this.processingTimeout = setTimeout(() => {
-              if (this.buffer.trim()) {
-                  this.processChunk(this.buffer.trim(), false);
-                  this.buffer = '';
-              }
-          }, this.CHUNK_INTERVAL);
-      }
-  }
+    restartRecognition() {
+        try {
+            console.log('DEBUG: Attempting to restart recognition');
+            this.recognition.start();
+        } catch (error) {
+            console.error('DEBUG: Error restarting recognition:', error);
+            setTimeout(() => {
+                if (this.isRecording) {
+                    console.log('DEBUG: Retrying recognition start');
+                    this.recognition.start();
+                }
+            }, 1000);
+        }
+    }
 
-  processChunk(text, isFinal) {
-      if (text) {
-          window.dispatchEvent(new CustomEvent('speechResult', {
-              detail: {
-                  transcript: text,
-                  isFinal: isFinal
-              }
-          }));
-      }
-  }
+    async startRecording(languageCode) {
+        try {
+            console.log('DEBUG: Starting recording with language:', languageCode);
+            if (this.isRecording) return;
 
-  restartRecognition() {
-      try {
-          this.recognition.start();
-      } catch (error) {
-          console.error('Error restarting recognition:', error);
-          setTimeout(() => {
-              if (this.isRecording) {
-                  this.recognition.start();
-              }
-          }, 1000);
-      }
-  }
+            this.recognition.lang = languageCode;
+            
+            // Clear any existing state
+            this.buffer = '';
+            this.lastProcessedTimestamp = Date.now();
+            clearTimeout(this.processingTimeout);
 
-  async startRecording(languageCode) {
-      try {
-          if (this.isRecording) return;
+            await this.recognition.start();
+            this.isRecording = true;
 
-          this.recognition.lang = languageCode;
-          
-          // Clear any existing state
-          this.buffer = '';
-          this.lastProcessedTimestamp = Date.now();
-          clearTimeout(this.processingTimeout);
+            window.dispatchEvent(new CustomEvent('recordingStateChange', {
+                detail: { isRecording: true }
+            }));
 
-          await this.recognition.start();
-          this.isRecording = true;
+            console.log('DEBUG: Recording started successfully');
+        } catch (error) {
+            console.error('DEBUG: Start recording error:', error);
+            this.stopRecording();
+        }
+    }
 
-          window.dispatchEvent(new CustomEvent('recordingStateChange', {
-              detail: { isRecording: true }
-          }));
+    async stopRecording() {
+        try {
+            console.log('DEBUG: Stopping recording');
+            if (!this.isRecording) return;
 
-      } catch (error) {
-          console.error('Start recording error:', error);
-          this.stopRecording();
-      }
-  }
+            clearTimeout(this.processingTimeout);
+            
+            // Process any remaining buffer before stopping
+            if (this.buffer.trim()) {
+                this.processChunk(this.buffer.trim(), true);
+                this.buffer = '';
+            }
 
-  async stopRecording() {
-      try {
-          if (!this.isRecording) return;
+            await this.recognition.stop();
+            this.isRecording = false;
 
-          clearTimeout(this.processingTimeout);
-          
-          // Process any remaining buffer
-          if (this.buffer.trim()) {
-              this.processChunk(this.buffer.trim(), true);
-              this.buffer = '';
-          }
+            window.dispatchEvent(new CustomEvent('recordingStateChange', {
+                detail: { isRecording: false }
+            }));
 
-          await this.recognition.stop();
-          this.isRecording = false;
-
-          window.dispatchEvent(new CustomEvent('recordingStateChange', {
-              detail: { isRecording: false }
-          }));
-
-      } catch (error) {
-          console.error('Stop recording error:', error);
-      }
-  }
+            console.log('DEBUG: Recording stopped successfully');
+        } catch (error) {
+            console.error('DEBUG: Stop recording error:', error);
+        }
+    }
 }
