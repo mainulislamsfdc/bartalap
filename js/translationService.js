@@ -15,8 +15,8 @@ export default class TranslationService {
         const targetCode = targetLang.split('-')[0];
 
         try {
-            // First translation: Source language to target language
-            const firstResponse = await fetch(
+            // First translation: Source to target language
+            const translationResponse = await fetch(
                 `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`,
                 {
                     method: 'POST',
@@ -30,33 +30,36 @@ export default class TranslationService {
                 }
             );
 
-            if (!firstResponse.ok) throw new Error(`HTTP error! status: ${firstResponse.status}`);
-            const firstData = await firstResponse.json();
-            const translation = firstData.data.translations[0].translatedText;
+            if (!translationResponse.ok) throw new Error(`HTTP error! status: ${translationResponse.status}`);
+            const translationData = await translationResponse.json();
+            const translation = translationData.data.translations[0].translatedText;
 
-            // Second translation: Target language back to English for transliteration
-            const secondResponse = await fetch(
-                `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        q: translation,
-                        source: targetCode,
-                        target: 'en',
-                        format: 'text'
-                    })
-                }
+            // Get the pronunciation for each word
+            const words = translation.split(' ');
+            const pronunciationPromises = words.map(word => 
+                fetch(
+                    `https://translation.googleapis.com/language/translate/v2/transliterate?key=${this.apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            q: word,
+                            target_language: 'en',
+                            source_language: targetCode
+                        })
+                    }
+                ).then(res => res.json())
             );
 
-            if (!secondResponse.ok) throw new Error(`HTTP error! status: ${secondResponse.status}`);
-            const secondData = await secondResponse.json();
-            const transliteration = secondData.data.translations[0].translatedText;
+            const pronunciationResults = await Promise.all(pronunciationPromises);
+            const pronunciation = pronunciationResults
+                .map(result => result.data?.translations?.[0]?.translatedText || '')
+                .join(' ');
 
             this.translations.push({
                 original: text,
                 translated: translation,
-                transliterated: transliteration,
+                pronunciation,
                 sourceLang: sourceCode,
                 targetLang: targetCode,
                 timestamp: new Date()
@@ -64,7 +67,7 @@ export default class TranslationService {
 
             return {
                 translation,
-                transliteration
+                pronunciation
             };
 
         } catch (error) {
@@ -79,12 +82,12 @@ export default class TranslationService {
 
     exportTranslations() {
         const csv = [
-            ['Timestamp', 'Original', 'Translation', 'Transliteration'],
+            ['Timestamp', 'Original', 'Translation', 'Pronunciation'],
             ...this.translations.map(t => [
                 t.timestamp.toISOString(),
                 t.original,
                 t.translated,
-                t.transliterated
+                t.pronunciation
             ])
         ].map(row => row.join(',')).join('\n');
 
