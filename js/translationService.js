@@ -15,7 +15,7 @@ export default class TranslationService {
         const targetCode = targetLang.split('-')[0];
     
         try {
-            // Translate the text
+            // Google Translate API call
             const response = await fetch(
                 `https://translation.googleapis.com/language/translate/v2?key=${this.apiKey}&target=${targetCode}&source=${sourceCode}&format=text&model=nmt&q=${encodeURIComponent(text)}`
             );
@@ -26,7 +26,7 @@ export default class TranslationService {
             const translation = data.data.translations[0].translatedText;
             let pronunciation = data.data.translations[0].transliteration || '';
     
-            // If pronunciation is missing, attempt transliteration using an external API
+            // If pronunciation is missing, fetch transliteration separately
             if (!pronunciation) {
                 pronunciation = await this.getTransliteration(translation, targetCode);
             }
@@ -40,6 +40,8 @@ export default class TranslationService {
                 timestamp: new Date()
             });
     
+            console.log(`DEBUG: Final output -> Translation: ${translation}, Pronunciation: ${pronunciation}`);
+    
             return {
                 translation,
                 pronunciation
@@ -51,15 +53,19 @@ export default class TranslationService {
         }
     }
     
-    // Function to fetch transliteration separately
+    // Separate API request to Google Input Tools for transliteration
     async getTransliteration(text, targetLang) {
         try {
+            console.log(`DEBUG: Fetching transliteration for: ${text} in ${targetLang}`);
+    
             const response = await fetch(
                 `https://inputtools.google.com/request?itc=${targetLang}-t-i0-und&text=${encodeURIComponent(text)}`
             );
-            
+    
             if (!response.ok) throw new Error('Failed to fetch transliteration');
             const data = await response.json();
+    
+            console.log(`DEBUG: Transliteration response ->`, data);
     
             return data[1]?.[0]?.[1]?.[0] || text; // Extract transliteration or return original text
         } catch (error) {
@@ -67,6 +73,7 @@ export default class TranslationService {
             return text; // Return original text as fallback
         }
     }
+    
     
 
     clearTranslations() {
