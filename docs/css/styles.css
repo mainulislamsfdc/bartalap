@@ -1,12 +1,12 @@
 :root {
-    --primary-color: #2196F3;
-    --primary-dark: #1976D2;
-    --primary-light: #BBDEFB;
-    --accent-color: #FF4081;
-    --text-color: #333333;
-    --text-light: #666666;
-    --background-color: #F5F5F5;
-    --card-background: #FFFFFF;
+    --primary-color: hsl(207, 36%, 54%);
+    --primary-dark: #2d7dce;
+    --primary-light: #c7d4df;
+    --accent-color: #239445;
+    --text-color: #2c0808;
+    --text-light: #6d4d4d;
+    --background-color: #79b8d177;
+    --card-background: #c4adad;
 }
 
 * {
@@ -29,8 +29,8 @@ body {
 
 .app-container {
     width: 100%;
-    height: 100vh;
-    background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+    height: 100%;
+    background: rgba(37, 117, 141, 0.151);
     border-radius: 24px;
     padding: 24px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -91,7 +91,7 @@ body {
     padding: 8px 24px 8px 8px;
     border-radius: 6px;
     border: 1px solid rgba(0,0,0,0.1);
-    background: white;
+    background: rgb(233, 220, 220);
     font-size: 0.9rem;
     color: var(--text-color);
     width: 100%;
@@ -129,7 +129,7 @@ body {
 }
 
 .current-text-wrapper {
-    background: white;
+    background: rgb(227, 236, 235);
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 24px;
@@ -194,7 +194,7 @@ body {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: none;
+    border: wheat;
     background: var(--accent-color);
     color: white;
     cursor: pointer;
