@@ -40,7 +40,7 @@ export default class AudioHandler {
     setupContinuousRecognition() {
         console.log('DEBUG: Setting up continuous recognition');
         this.recognition.continuous = true;
-        this.recognition.interimResults = true;
+        this.recognition.interimResults = false;
         this.recognition.maxAlternatives = 1;
         this.recognition.lang = this.sourceLang;
 

@@ -36,9 +36,19 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .app-header {
+    flex-shrink: 0;
     text-align: center;
     margin-bottom: 24px;
 }
@@ -110,14 +120,63 @@ body {
     flex-shrink: 0;
 }
 
+.translation-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .current-text-wrapper {
     background: white;
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 24px;
-    flex: 1;
     overflow-y: auto;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-height: 30vh;
+}
+
+.translation-history {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    min-height: 0;
+}
+
+.translation-item {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.translation-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.translation-text {
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--background-color);
+}
+
+.timestamp {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.controls {
+    position: sticky;
+    bottom: 0;
+    background: transparent;
+    padding-top: 16px;
+    margin-top: auto;
 }
 
 .control-buttons {
@@ -128,7 +187,7 @@ body {
     padding: 16px;
     background: rgba(255, 255, 255, 0.5);
     border-radius: 12px;
-    margin-top: auto;
+    backdrop-filter: blur(8px);
 }
 
 .mic-button {
@@ -168,39 +227,6 @@ body {
     grid-column: 3;
 }
 
-.translation-history {
-    flex: 1;
-    overflow-y: auto;
-    margin-top: 16px;
-}
-
-.translation-item {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-}
-
-.translation-pair {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.translation-text {
-    padding: 8px;
-    border-radius: 6px;
-    background: var(--background-color);
-}
-
-.timestamp {
-    font-size: 0.8rem;
-    color: var(--text-light);
-    margin-bottom: 4px;
-}
-
-/* Loading and Error States */
 .loading-indicator,
 .error-message {
     position: fixed;
