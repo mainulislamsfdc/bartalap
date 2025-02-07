@@ -9,7 +9,7 @@ export default class UIController {
     this.currentText = document.getElementById("currentText");
     this.translationHistory = document.getElementById("translationHistory");
     this.recordingStatus = document.getElementById("recordingStatus");
-    this.loadingIndicator = document.getElementById("loadingIndicator");
+    //this.loadingIndicator = document.getElementById("loadingIndicator");
     this.errorMessage = document.getElementById("errorMessage");
 
     // Add event listeners for language switches
@@ -40,6 +40,9 @@ export default class UIController {
         this.onLanguageChange(targetLang, sourceLang);
       });
     }
+
+    this.clearButton.addEventListener("click", () => this.clearTranslations());
+    this.exportButton.addEventListener("click", () => this.exportTranslations());
   }
 
   onLanguageChange(sourceLang, targetLang) {
@@ -176,5 +179,28 @@ export default class UIController {
     if (this.errorMessage) {
       this.errorMessage.classList.add("hidden");
     }
+  }
+
+  exportTranslations() {
+    const translations = [];
+    const items = this.translationHistory.querySelectorAll('.translation-item');
+    
+    items.forEach(item => {
+      const original = item.querySelector('.original-text').textContent.trim();
+      const translated = item.querySelector('.translated-text').textContent.trim();
+      const timestamp = item.querySelector('.timestamp').textContent;
+      
+      translations.push({ timestamp, original, translated });
+    });
+
+    const blob = new Blob([JSON.stringify(translations, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'translations.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 }

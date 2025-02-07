@@ -227,7 +227,6 @@ body {
     grid-column: 3;
 }
 
-.loading-indicator,
 .error-message {
     position: fixed;
     bottom: 20px;
