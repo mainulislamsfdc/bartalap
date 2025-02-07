@@ -1,4 +1,3 @@
-// uiController.js
 export default class UIController {
   constructor() {
     this.synth = window.speechSynthesis;
@@ -11,10 +10,13 @@ export default class UIController {
     this.translationHistory = document.getElementById("translationHistory");
     this.recordingStatus = document.getElementById("recordingStatus");
     this.errorMessage = document.getElementById("errorMessage");
+    this.isRecording = false;
 
-    // Add event listeners for buttons
     document.addEventListener('click', (e) => {
       if (e.target.classList.contains('speak-button')) {
+        if (this.isRecording) {
+          window.dispatchEvent(new CustomEvent("stopRecording"));
+        }
         const text = e.target.dataset.text;
         const lang = e.target.dataset.lang;
         this.speakText(text, lang);
@@ -24,7 +26,6 @@ export default class UIController {
     this.clearButton.addEventListener("click", () => this.clearTranslations());
     this.exportButton.addEventListener("click", () => this.exportTranslations());
 
-    // Add event listeners for language switches
     this.sourceLanguageSelect.addEventListener("change", () => {
       const sourceLang = this.sourceLanguageSelect.value;
       const targetLang = this.targetLanguageSelect.value;
@@ -37,18 +38,13 @@ export default class UIController {
       this.onLanguageChange(sourceLang, targetLang);
     });
 
-    // Language switch button
     const switchButton = document.getElementById("switchLanguages");
     if (switchButton) {
       switchButton.addEventListener("click", () => {
         const sourceLang = this.sourceLanguageSelect.value;
         const targetLang = this.targetLanguageSelect.value;
-
-        // Swap languages
         this.sourceLanguageSelect.value = targetLang;
         this.targetLanguageSelect.value = sourceLang;
-
-        // Trigger language change event
         this.onLanguageChange(targetLang, sourceLang);
       });
     }
@@ -63,11 +59,9 @@ export default class UIController {
   }
 
   updateRecordingState(isRecording) {
+    this.isRecording = isRecording;
     this.micButton.classList.toggle("recording", isRecording);
-    this.micButton.querySelector(".mic-icon").textContent = isRecording
-      ? "⏹"
-      : "🎤";
-
+    this.micButton.querySelector(".mic-icon").textContent = isRecording ? "⏹" : "🎤";
     if (this.recordingStatus) {
       this.recordingStatus.textContent = isRecording ? "Recording..." : "";
     }
@@ -82,7 +76,6 @@ export default class UIController {
         <div class="translation-text original-text">
           <div class="text-header">
             <strong>${sourceLang}:</strong>
-            <button class="speak-button" data-text="${text}" data-lang="${this.sourceLanguageSelect.value}">🔊</button>
           </div>
           ${text}
         </div>
@@ -102,7 +95,6 @@ export default class UIController {
   addTranslation(translation) {
     const element = document.createElement("div");
     element.className = "translation-item";
-
     const sourceLang = this.getLanguageName(this.sourceLanguageSelect.value);
     const targetLang = this.getLanguageName(this.targetLanguageSelect.value);
 
@@ -112,7 +104,6 @@ export default class UIController {
         <div class="translation-text original-text">
           <div class="text-header">
             <strong>${sourceLang}:</strong>
-            <button class="speak-button" data-text="${translation.original}" data-lang="${this.sourceLanguageSelect.value}">🔊</button>
           </div>
           ${translation.original}
         </div>
@@ -159,7 +150,6 @@ export default class UIController {
       const original = item.querySelector('.original-text').textContent.trim();
       const translated = item.querySelector('.translated-text').textContent.trim();
       const timestamp = item.querySelector('.timestamp').textContent;
-      
       translations.push({ timestamp, original, translated });
     });
 
@@ -181,10 +171,7 @@ export default class UIController {
         errorText.textContent = message;
       }
       this.errorMessage.classList.remove("hidden");
-
-      setTimeout(() => {
-        this.hideError();
-      }, 5000);
+      setTimeout(() => this.hideError(), 5000);
     }
   }
 
@@ -198,7 +185,6 @@ export default class UIController {
     if (this.synth.speaking) {
       this.synth.cancel();
     }
-    
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
     this.synth.speak(utterance);
