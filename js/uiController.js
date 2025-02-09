@@ -1,6 +1,8 @@
 export default class UIController {
   constructor() {
     this.synth = window.speechSynthesis;
+    this.preferredVoiceGender = "female";
+    this.voices = [];
     this.micButton = document.getElementById("micButton");
     this.clearButton = document.getElementById("clearButton");
     this.exportButton = document.getElementById("exportButton");
@@ -12,8 +14,15 @@ export default class UIController {
     this.errorMessage = document.getElementById("errorMessage");
     this.isRecording = false;
 
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('speak-button')) {
+    // Initialize voices when they're available
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = () => {
+        this.voices = this.synth.getVoices();
+      };
+    }
+
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("speak-button")) {
         if (this.isRecording) {
           window.dispatchEvent(new CustomEvent("stopRecording"));
         }
@@ -24,7 +33,9 @@ export default class UIController {
     });
 
     this.clearButton.addEventListener("click", () => this.clearTranslations());
-    this.exportButton.addEventListener("click", () => this.exportTranslations());
+    this.exportButton.addEventListener("click", () =>
+      this.exportTranslations()
+    );
 
     this.sourceLanguageSelect.addEventListener("change", () => {
       const sourceLang = this.sourceLanguageSelect.value;
@@ -61,7 +72,9 @@ export default class UIController {
   updateRecordingState(isRecording) {
     this.isRecording = isRecording;
     this.micButton.classList.toggle("recording", isRecording);
-    this.micButton.querySelector(".mic-icon").textContent = isRecording ? "⏹" : "🎤";
+    this.micButton.querySelector(".mic-icon").textContent = isRecording
+      ? "⏹"
+      : "🎤";
     if (this.recordingStatus) {
       this.recordingStatus.textContent = isRecording ? "Recording..." : "";
     }
@@ -79,7 +92,9 @@ export default class UIController {
           </div>
           ${text}
         </div>
-        ${translation ? `
+        ${
+          translation
+            ? `
           <div class="translation-text translated-text">
             <div class="text-header">
               <strong>${targetLang}:</strong>
@@ -87,11 +102,14 @@ export default class UIController {
             </div>
             ${translation}
           </div>
-        ` : ""}
+        `
+            : ""
+        }
       </div>
     `;
   }
 
+  // Inside UIController.js - Update the addTranslation method
   addTranslation(translation) {
     const element = document.createElement("div");
     element.className = "translation-item";
@@ -101,27 +119,66 @@ export default class UIController {
     element.innerHTML = `
       <div class="timestamp">${new Date().toLocaleTimeString()}</div>
       <div class="translation-pair">
-        <div class="translation-text original-text">
-          <div class="text-header">
-            <strong>${sourceLang}:</strong>
+          <div class="translation-text original-text">
+              <div class="text-header">
+                  <strong>${sourceLang}:</strong>
+              </div>
+              ${translation.original}
           </div>
-          ${translation.original}
-        </div>
-        <div class="translation-text translated-text">
-          <div class="text-header">
-            <strong>${targetLang}:</strong>
-            <button class="speak-button" data-text="${translation.translated}" data-lang="${this.targetLanguageSelect.value}">🔊</button>
+          <div class="translation-text translated-text">
+              <div class="text-header">
+                  <strong>${targetLang}:</strong>
+                  <div class="voice-controls">
+                      <div class="voice-toggle">
+                          <button class="voice-btn male ${
+                            this.preferredVoiceGender === "male" ? "active" : ""
+                          }" 
+                                  data-voice="male" onclick="this.closest('.translation-item').querySelector('.speak-button').dataset.gender = 'male'">
+                              <span class="icon">👨</span>
+                          </button>
+                          <button class="voice-btn female ${
+                            this.preferredVoiceGender === "female"
+                              ? "active"
+                              : ""
+                          }" 
+                                  data-voice="female" onclick="this.closest('.translation-item').querySelector('.speak-button').dataset.gender = 'female'">
+                              <span class="icon">👩</span>
+                          </button>
+                      </div>
+                      <button class="speak-button" 
+                              data-text="${translation.translated}" 
+                              data-lang="${this.targetLanguageSelect.value}"
+                              data-gender="${
+                                this.preferredVoiceGender
+                              }">🔊</button>
+                  </div>
+              </div>
+              <div class="target-script">${translation.translated}</div>
+              ${
+                translation.transliteration &&
+                translation.transliteration !== translation.translated
+                  ? `<div class="transliteration">(${translation.transliteration})</div>`
+                  : ""
+              }
           </div>
-          <div class="target-script">${translation.translated}</div>
-          ${translation.transliteration && translation.transliteration !== translation.translated
-            ? `<div class="transliteration">(${translation.transliteration})</div>`
-            : ""
-          }
-        </div>
       </div>
     `;
 
-    this.translationHistory.insertBefore(element, this.translationHistory.firstChild);
+    // Add voice button click handlers
+    const voiceButtons = element.querySelectorAll(".voice-btn");
+    voiceButtons.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const gender = btn.dataset.voice;
+        this.setVoicePreference(gender);
+        voiceButtons.forEach((b) => b.classList.toggle("active", b === btn));
+      });
+    });
+
+    this.translationHistory.insertBefore(
+      element,
+      this.translationHistory.firstChild
+    );
   }
 
   getLanguageName(code) {
@@ -139,25 +196,30 @@ export default class UIController {
 
   clearTranslations() {
     this.translationHistory.innerHTML = "";
-    this.currentText.innerHTML = '<p class="placeholder">Press the microphone to start...</p>';
+    this.currentText.innerHTML =
+      '<p class="placeholder">Press the microphone to start...</p>';
   }
 
   exportTranslations() {
     const translations = [];
-    const items = this.translationHistory.querySelectorAll('.translation-item');
-    
-    items.forEach(item => {
-      const original = item.querySelector('.original-text').textContent.trim();
-      const translated = item.querySelector('.translated-text').textContent.trim();
-      const timestamp = item.querySelector('.timestamp').textContent;
+    const items = this.translationHistory.querySelectorAll(".translation-item");
+
+    items.forEach((item) => {
+      const original = item.querySelector(".original-text").textContent.trim();
+      const translated = item
+        .querySelector(".translated-text")
+        .textContent.trim();
+      const timestamp = item.querySelector(".timestamp").textContent;
       translations.push({ timestamp, original, translated });
     });
 
-    const blob = new Blob([JSON.stringify(translations, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(translations, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'translations.json';
+    a.download = "translations.json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -181,12 +243,46 @@ export default class UIController {
     }
   }
 
+  // Add these methods to UIController class
+  getVoiceForLanguage(lang, gender) {
+    const langCode = lang.split("-")[0]; // Convert 'en-US' to 'en'
+    const voices = this.voices.filter(
+      (voice) =>
+        voice.lang.startsWith(langCode) &&
+        voice.name.toLowerCase().includes(gender.toLowerCase())
+    );
+    return (
+      voices[0] ||
+      this.voices.find((voice) => voice.lang.startsWith(langCode)) ||
+      this.voices[0]
+    );
+  }
+
   speakText(text, lang) {
     if (this.synth.speaking) {
       this.synth.cancel();
     }
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
+
+    // Set voice based on preference
+    const voice = this.getVoiceForLanguage(lang, this.preferredVoiceGender);
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    // Adjust pitch based on gender
+    utterance.pitch = this.preferredVoiceGender === "female" ? 1.2 : 0.9;
+
     this.synth.speak(utterance);
+  }
+
+  setVoicePreference(gender) {
+    this.preferredVoiceGender = gender;
+    // Update UI to reflect the change
+    document.querySelectorAll(".voice-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.voice === gender);
+    });
   }
 }
