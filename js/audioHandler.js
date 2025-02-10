@@ -11,7 +11,7 @@ export default class AudioHandler {
     }
 
     setLanguages(sourceLang, targetLang) {
-        console.log('DEBUG: Setting languages:', { sourceLang, targetLang });
+       // console.log('DEBUG: Setting languages:', { sourceLang, targetLang });
         this.sourceLang = sourceLang;
         this.targetLang = targetLang;
 
@@ -22,14 +22,14 @@ export default class AudioHandler {
 
     async initialize() {
         try {
-            console.log('DEBUG: Initializing AudioHandler');
+           // console.log('DEBUG: Initializing AudioHandler');
             if (!('webkitSpeechRecognition' in window)) {
                 throw new Error('Speech recognition not supported');
             }
 
             this.recognition = new webkitSpeechRecognition();
             this.setupContinuousRecognition();
-            console.log('DEBUG: AudioHandler initialized successfully');
+           // console.log('DEBUG: AudioHandler initialized successfully');
             return true;
         } catch (error) {
             console.error('DEBUG: Audio initialization error:', error);
@@ -38,21 +38,21 @@ export default class AudioHandler {
     }
 
     setupContinuousRecognition() {
-        console.log('DEBUG: Setting up continuous recognition');
+       // console.log('DEBUG: Setting up continuous recognition');
         this.recognition.continuous = true;
         this.recognition.interimResults = false;
         this.recognition.maxAlternatives = 1;
         this.recognition.lang = this.sourceLang;
 
         this.recognition.onresult = (event) => {
-            console.log('DEBUG: Recognition result received');
+           // console.log('DEBUG: Recognition result received');
             let interimTranscript = '';
             let finalTranscript = '';
 
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    console.log('DEBUG: Final transcript:', transcript);
+                  //  console.log('DEBUG: Final transcript:', transcript);
                     finalTranscript += transcript;
                     this.processChunk(transcript.trim(), true);
                 } else {
@@ -61,7 +61,7 @@ export default class AudioHandler {
             }
 
             if (interimTranscript) {
-                console.log('DEBUG: Interim transcript:', interimTranscript);
+                //console.log('DEBUG: Interim transcript:', interimTranscript);
                 this.processChunk(interimTranscript.trim(), false);
             }
         };
@@ -76,9 +76,9 @@ export default class AudioHandler {
         };
 
         this.recognition.onend = () => {
-            console.log('DEBUG: Recognition ended');
+          //  console.log('DEBUG: Recognition ended');
             if (this.isRecording) {
-                console.log('DEBUG: Restarting recognition');
+            //    console.log('DEBUG: Restarting recognition');
                 this.restartRecognition();
             }
         };
@@ -86,7 +86,7 @@ export default class AudioHandler {
 
     processChunk(text, isFinal) {
         if (text) {
-            console.log('DEBUG: Processing chunk:', { text, isFinal });
+         //   console.log('DEBUG: Processing chunk:', { text, isFinal });
             window.dispatchEvent(new CustomEvent('speechResult', {
                 detail: {
                     transcript: text,
@@ -98,13 +98,13 @@ export default class AudioHandler {
 
     restartRecognition() {
         try {
-            console.log('DEBUG: Attempting to restart recognition');
+          //  console.log('DEBUG: Attempting to restart recognition');
             this.recognition.start();
         } catch (error) {
             console.error('DEBUG: Error restarting recognition:', error);
             setTimeout(() => {
                 if (this.isRecording) {
-                    console.log('DEBUG: Retrying recognition start');
+                //    console.log('DEBUG: Retrying recognition start');
                     this.recognition.start();
                 }
             }, 1000);
@@ -113,7 +113,7 @@ export default class AudioHandler {
 
     async startRecording(languageCode) {
         try {
-            console.log('DEBUG: Starting recording with language:', languageCode);
+           // console.log('DEBUG: Starting recording with language:', languageCode);
             if (this.isRecording) return;
 
             this.recognition.lang = languageCode;
@@ -130,7 +130,7 @@ export default class AudioHandler {
                 detail: { isRecording: true }
             }));
 
-            console.log('DEBUG: Recording started successfully');
+           // console.log('DEBUG: Recording started successfully');
         } catch (error) {
             console.error('DEBUG: Start recording error:', error);
             this.stopRecording();
@@ -139,7 +139,7 @@ export default class AudioHandler {
 
     async stopRecording() {
         try {
-            console.log('DEBUG: Stopping recording');
+           // console.log('DEBUG: Stopping recording');
             if (!this.isRecording) return;
 
             clearTimeout(this.processingTimeout);
@@ -157,7 +157,7 @@ export default class AudioHandler {
                 detail: { isRecording: false }
             }));
 
-            console.log('DEBUG: Recording stopped successfully');
+            //console.log('DEBUG: Recording stopped successfully');
         } catch (error) {
             console.error('DEBUG: Stop recording error:', error);
         }

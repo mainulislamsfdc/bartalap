@@ -7,13 +7,17 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <meta name="theme-color" content="#2196F3">
+    <meta name="theme-color" content="#150B35">
 </head>
 <body>
     <div class="app-container">
         <div class="content-wrapper">
             <header class="app-header">
-                <h1>Bartalap - Bridging Societies</h1>
+                <div class="header-top">
+                     <img src="bartalap-logo.png" alt="Bartalap Logo" class="logo">
+                    <h1>Bartalap - Bridging Societies</h1>
+                    
+                </div>
                 <div class="language-controls">
                     <div class="language-selection">
                         <div class="source-language">
@@ -46,6 +50,19 @@
                             </select>
                         </div>
                     </div>
+                    <div class="voice-preference">
+                        <label class="voice-label">Voice Preference:</label>
+                        <div class="voice-toggle">
+                            <button class="voice-btn male active" data-voice="male">
+                                <span class="icon">👨</span>
+                                <span>Male</span>
+                            </button>
+                            <button class="voice-btn female" data-voice="female">
+                                <span class="icon">👩</span>
+                                <span>Female</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -59,7 +76,7 @@
                 </div>
             </main>
 
-            <footer class="controls">
+            <footer class="app-footer">
                 <div class="control-buttons">
                     <button id="clearButton" class="action-button clear-button">
                         Clear History
@@ -74,6 +91,10 @@
                 <div class="status-indicator">
                     <span id="recordingStatus" class="recording-status"></span>
                 </div>
+                <p class="copyright">Copyright © 2025 Bartalap</p>
+                <a href="https://forms.gle/qwTPLWPHm3s9W2jP8" target="_blank" class="feedback-link">
+                    Feedback
+                </a>
             </footer>
         </div>
     </div>
