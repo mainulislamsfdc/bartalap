@@ -1,5 +1,8 @@
 export default class UIController {
   constructor() {
+    if (typeof window === 'undefined') {
+        throw new Error('UIController requires a browser environment');
+    }
       this.synth = window.speechSynthesis;
       this.preferredVoiceGender = localStorage.getItem('voicePreference') || 'male';
       this.voices = [];

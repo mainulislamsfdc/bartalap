@@ -1,6 +1,9 @@
 // audioHandler.js
 export default class AudioHandler {
     constructor() {
+        if (typeof window === 'undefined') {
+            throw new Error('AudioHandler requires a browser environment');
+        }
         this.recognition = null;
         this.isRecording = false;
         this.buffer = "";

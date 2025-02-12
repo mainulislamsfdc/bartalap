@@ -1,4 +1,10 @@
 // app.js
+
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+    return false;
+};
+
 import TranslationService from './translationService.js';
 import AudioHandler from './audioHandler.js';
 import UIController from './uiController.js';
@@ -15,17 +21,17 @@ class App {
 
     async initialize() {
         try {
-            //console.log('DEBUG: Starting initialization');
+            console.log('DEBUG: Starting initialization');
             const isAudioInitialized = await this.audioHandler.initialize();
             if (!isAudioInitialized) {
                 throw new Error('Failed to initialize audio');
             }
-            //console.log('DEBUG: Audio initialized successfully');
+            console.log('DEBUG: Audio initialized successfully');
 
             if ('serviceWorker' in navigator) {
                 try {
                     await navigator.serviceWorker.register('./sw.js');
-                    //console.log('Service Worker registered');
+                    console.log('Service Worker registered');
                 } catch (error) {
                     console.error('Service Worker registration failed:', error);
                 }
@@ -38,22 +44,22 @@ class App {
     }
 
     setupEventListeners() {
-        //console.log('DEBUG: Setting up event listeners');
+        console.log('DEBUG: Setting up event listeners');
         
         this.uiController.micButton.addEventListener('click', () => {
-            //console.log('DEBUG: Mic button clicked');
+        console.log('DEBUG: Mic button clicked');
             if (this.audioHandler.isRecording) {
                 this.audioHandler.stopRecording();
             } else {
                 const selectedLanguage = this.uiController.sourceLanguageSelect.value;
-               // console.log('DEBUG: Starting recording with language:', selectedLanguage);
+                console.log('DEBUG: Starting recording with language:', selectedLanguage);
                 this.audioHandler.startRecording(selectedLanguage);
             }
         });
 
         window.addEventListener('speechResult', async (event) => {
             const { transcript, isFinal } = event.detail;
-            //console.log('DEBUG: Speech result received:', { transcript, isFinal });
+            console.log('DEBUG: Speech result received:', { transcript, isFinal });
             
             this.uiController.updateCurrentText(transcript);
 
@@ -74,7 +80,7 @@ class App {
                         targetLang
                     );
 
-                   // console.log('DEBUG: Translation received:', translation);
+                    console.log('DEBUG: Translation received:', translation);
 
                     this.uiController.addTranslation({
                         original: transcript,
@@ -92,20 +98,20 @@ class App {
 
         window.addEventListener('recordingStateChange', (event) => {
             const { isRecording } = event.detail;
-           // console.log('DEBUG: Recording state changed:', isRecording);
+            console.log('DEBUG: Recording state changed:', isRecording);
             this.uiController.updateRecordingState(isRecording);
         });
 
         // Add language change event listener
         window.addEventListener('languageChange', (event) => {
             const { sourceLang, targetLang } = event.detail;
-           // console.log('DEBUG: Language change event:', { sourceLang, targetLang });
+            console.log('DEBUG: Language change event:', { sourceLang, targetLang });
             this.audioHandler.setLanguages(sourceLang, targetLang);
         });
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    //console.log('DEBUG: DOM Content Loaded - Creating App instance');
-    new App();
+    console.log('DEBUG: DOM Content Loaded - Creating App instance');
+    const app = new App();
 });
