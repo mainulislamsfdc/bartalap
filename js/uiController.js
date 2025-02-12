@@ -170,31 +170,32 @@ export default class UIController {
 
     addTranslation(translation) {
         if (!this.translationHistory) return;
-
+    
         const element = document.createElement("div");
         element.className = "translation-item";
         const sourceLang = this.getLanguageName(this.sourceLanguageSelect.value);
         const targetLang = this.getLanguageName(this.targetLanguageSelect.value);
-
+    
         element.innerHTML = `
             <div class="timestamp">${new Date().toLocaleTimeString()}</div>
             <div class="translation-content">
                 <div class="translation-header">
                     <div class="lang-indicator">${sourceLang} → ${targetLang}</div>
-                    <button class="speak-button" 
-                            data-text="${translation.translated}" 
-                            data-lang="${this.targetLanguageSelect.value}">🔊</button>
                 </div>
                 <div class="translation-text">
+                    <div class="original-text">${translation.original}</div>
                     <div class="translated-text">${translation.translated}</div>
                     ${translation.transliteration && translation.transliteration !== translation.translated
                         ? `<div class="transliteration">(${translation.transliteration})</div>`
                         : ""
                     }
+                    <button class="speak-button" 
+                            data-text="${translation.translated}" 
+                            data-lang="${this.targetLanguageSelect.value}">🔊</button>
                 </div>
             </div>
         `;
-
+    
         this.translationHistory.insertBefore(element, this.translationHistory.firstChild);
     }
 
