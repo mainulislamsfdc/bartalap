@@ -12,7 +12,7 @@ export default class UIController {
       }
 
       // Initialize UI elements
-      this.micButton = document.getElementById("micButton");
+     // this.micButton = document.getElementById("micButton");
       this.clearButton = document.getElementById("clearButton");
       this.exportButton = document.getElementById("exportButton");
       this.sourceLanguageSelect = document.getElementById("sourceLanguageSelect");
@@ -120,6 +120,8 @@ export default class UIController {
               detail: { sourceLang, targetLang },
           })
       );
+      this.sourceLanguageSelect.value = sourceLang;
+    this.targetLanguageSelect.value = targetLang;
   }
 
   updateRecordingState(isRecording) {
