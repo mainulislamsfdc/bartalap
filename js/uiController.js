@@ -178,27 +178,27 @@ export default class UIController {
     
         element.innerHTML = `
             <div class="timestamp">${new Date().toLocaleTimeString()}</div>
-        <div class="translation-row">
-            <div class="translation-column">
-                <div class="translation-box source">
-                    <div class="lang-label">${sourceLang}</div>
-                    <div class="text">${translation.original}</div>
+            <div class="translation-row">
+                <div class="translation-column">
+                    <div class="translation-box source">
+                        <div class="lang-label">${sourceLang}</div>
+                        <div class="text">${translation.original}</div>
+                    </div>
                 </div>
-            </div>
-            <div class="translation-column">
-                <div class="translation-box target">
-                    <div class="lang-label">${targetLang}</div>
-                    <div class="text">${translation.translated}</div>
-                    ${translation.transliteration && translation.transliteration !== translation.translated
-                        ? `<div class="transliteration">(${translation.transliteration})</div>`
-                        : ""
-                    }
+                <div class="translation-column">
+                    <div class="translation-box target">
+                        <div class="lang-label">${targetLang}</div>
+                        <div class="text">${translation.translated}</div>
+                        ${translation.transliteration && translation.transliteration !== translation.translated
+                            ? `<div class="transliteration">(${translation.transliteration})</div>`
+                            : ""
+                        }
+                    </div>
                 </div>
+                <button class="speak-button" 
+                        data-text="${translation.translated}" 
+                        data-lang="${this.targetLanguageSelect.value}">🔊</button>
             </div>
-            <button class="speak-button" 
-                    data-text="${translation.translated}" 
-                    data-lang="${this.targetLanguageSelect.value}">🔊</button>
-        </div>
         `;
     
         this.translationHistory.insertBefore(element, this.translationHistory.firstChild);
