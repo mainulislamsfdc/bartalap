@@ -1,0 +1,65 @@
+@media (min-width: 480px) {
+    .app-container {
+        max-width: 900px;
+        height: 90vh;
+        margin: auto;
+    }
+
+    .translation-pair {
+        flex-direction: row;
+    }
+
+    .translation-text {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-container {
+        height: 100vh;
+        border-radius: 0;
+        padding: 12px;
+    }
+
+    .language-selection {
+        padding: 0;
+    }
+
+    .control-buttons {
+        padding: 16px;
+    }
+
+    .voice-btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .voice-btn .icon {
+        font-size: 1rem;
+    }
+
+    .header-top {
+        gap: 8px;
+    }
+
+    .logo-container {
+        width: 28px;
+        height: 28px;
+    }
+
+    .app-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .translation-row {
+        gap: 8px;
+    }
+
+    .translation-box {
+        padding: 8px;
+    }
+
+    .text {
+        font-size: 0.9rem;
+    }
+}
