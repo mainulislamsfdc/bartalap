@@ -507,6 +507,12 @@ body {
         object-fit: contain;
         filter: brightness(0) saturate(100%) invert(63%) sepia(50%) saturate(450%) hue-rotate(5deg) brightness(101%) contrast(102%);
     }
+
+    .logo-text {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
     
     .feedback-link {
         color: var(--primary-color);
@@ -548,5 +554,72 @@ body {
         flex-direction: column;
         gap: 8px;
     }
+    .translation-row {
+        gap: 8px;
+    }
 
+    .translation-box {
+        padding: 8px;
+    }
+
+    .text {
+        font-size: 0.9rem;
+    }
+    
+
+}
+
+.logo-text {
+    width: 32px; /* Smaller for mobile */
+    height: 32px;
+    background: var(--primary-color);
+    color: var(--primary-dark);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 8px;
+}
+
+.translation-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 8px;
+}
+
+.translation-column {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.translation-box {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 12px;
+    position: relative;
+}
+
+.lang-label {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.text {
+    word-break: break-word;
+}
+
+.transliteration {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.speak-button {
+    flex-shrink: 0;
+    margin-left: 8px;
+    align-self: center;
 }
