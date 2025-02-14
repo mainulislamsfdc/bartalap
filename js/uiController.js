@@ -146,6 +146,13 @@ export default class UIController {
 
     updateRecordingState(isRecording) {
         this.isRecording = isRecording;
+
+            // Hide/show language controls
+        const languageControls = document.querySelector('.language-controls');
+        if (languageControls) {
+            languageControls.classList.toggle('hidden', isRecording);
+        }
+
         if (this.micButton) {
             this.micButton.classList.toggle("recording", isRecording);
             const micIcon = this.micButton.querySelector(".mic-icon");

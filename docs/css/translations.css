@@ -63,3 +63,7 @@
     color: var(--text-light);
     margin-bottom: 4px;
 }
+
+.hidden {
+    display: none !important;
+}
