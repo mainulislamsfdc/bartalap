@@ -116,49 +116,43 @@ export default class UIController {
     }
 
     speakText(text, lang) {
-      if (this.synth.speaking) {
-        this.synth.cancel();
-      }
-
-      // Stop recording before speaking
-      if (this.isRecording) {
-        window.dispatchEvent(new CustomEvent("stopRecording"));
-        this.updateRecordingState(false); // Set recording state to false
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-
-      // Ensure voices are loaded
-      const voices = speechSynthesis.getVoices();
-
-      // Try selecting a voice based on language and gender
-      utterance.voice =
-        voices.find(
-          (voice) =>
-            voice.lang.startsWith(lang) &&
-            (this.preferredVoiceGender === "female"
-              ? voice.name.includes("Female")
-              : voice.name.includes("Male"))
-        ) ||
-        voices.find((voice) => voice.lang.startsWith(lang)) ||
-        null;
-
-      // Set pitch based on gender
-      utterance.pitch = this.preferredVoiceGender === "female" ? 1.2 : 0.9;
-
-      // Prevent microphone from restarting while speech is playing
-      utterance.onstart = () => {
-        this.updateRecordingState(false); // Ensure recording state is false
-      };
-
-      // Allow recording to resume after speech ends
-      utterance.onend = () => {
-        window.dispatchEvent(new CustomEvent("startRecording"));
-        this.updateRecordingState(true); // Resume recording after speech ends
-      };
-
-      this.synth.speak(utterance);
+        if (this.synth.speaking) {
+            this.synth.cancel();
+        }
+    
+        // Stop recording before speaking
+        if (this.isRecording) {
+            window.dispatchEvent(new CustomEvent("stopRecording"));
+            this.updateRecordingState(false);  // Set recording state to false
+        }
+    
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+    
+        // Ensure voices are loaded
+        const voices = speechSynthesis.getVoices();
+    
+        // Try selecting a voice based on language and gender
+        utterance.voice = voices.find(voice => 
+            voice.lang.startsWith(lang) && 
+            (this.preferredVoiceGender === 'female' ? voice.name.includes("Female") : voice.name.includes("Male"))
+        ) || voices.find(voice => voice.lang.startsWith(lang)) || null;
+    
+        // Set pitch based on gender
+        utterance.pitch = this.preferredVoiceGender === 'female' ? 1.2 : 0.9;
+    
+        // Prevent microphone from restarting while speech is playing
+        utterance.onstart = () => {
+            this.updateRecordingState(false); // Ensure recording state is false
+        };
+    
+        // Allow recording to resume after speech ends
+        utterance.onend = () => {
+            window.dispatchEvent(new CustomEvent("startRecording"));
+            this.updateRecordingState(true); // Resume recording after speech ends
+        };
+    
+        this.synth.speak(utterance);
     }
     
 
