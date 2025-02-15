@@ -2,11 +2,16 @@
     --primary-color: #00E5FF;
     --primary-dark: #150B35;
     --accent-color: #00E5FF;
-    --text-color: #53cf34;
+    --text-color: #53c736;
     --text-light: #B8B8B8;
     --background-color: #150B35;
     --card-background: #1E1246;
     --glow-color: rgba(0, 229, 255, 0.5);
+    --gold-light: #ffd700;
+    --gold-medium: #daa520;
+    --gold-dark: #b8860b;
+    --gold-gradient: linear-gradient(to bottom, var(--gold-light) 0%, var(--gold-medium) 50%, var(--gold-dark) 100%);
+    --gold-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes float {
@@ -47,5 +52,17 @@
     }
     100% {
         box-shadow: 0 0 5px var(--glow-color);
+    }
+}
+
+@keyframes golden-shimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
     }
 }

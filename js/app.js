@@ -8,6 +8,7 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
 import TranslationService from './translationService.js';
 import AudioHandler from './audioHandler.js';
 import UIController from './uiController.js';
+import { initializePWAInstall } from './pwaInstall.js'; 
 
 class App {
     constructor() {
@@ -17,7 +18,11 @@ class App {
         this.uiController = new UIController();
         this.initialize();
         this.setupEventListeners();
+
+        initializePWAInstall();
     }
+
+   
 
     async initialize() {
         try {

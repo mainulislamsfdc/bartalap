@@ -1,0 +1,37 @@
+/* src/css/pwaInstall.css */
+
+.install-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 8px;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0,229,255,0.1),
+                inset 0 0 10px rgba(0,229,255,0.05);
+    animation: installPulse 2s infinite;
+}
+
+.install-button:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 20px rgba(0,229,255,0.2),
+                inset 0 0 15px rgba(0,229,255,0.1);
+}
+
+@keyframes installPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
