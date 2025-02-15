@@ -18,6 +18,7 @@ export default class UIController {
         this.initializeElements();
         this.initializeEventListeners();
         this.initializeVoicePreference();
+        this.updateSelectedLanguages();
 
         // Global speak button listener
         document.addEventListener('click', (e) => {
@@ -82,6 +83,17 @@ export default class UIController {
                 this.sourceLanguageSelect.value = targetLang;
                 this.targetLanguageSelect.value = sourceLang;
                 this.onLanguageChange(targetLang, sourceLang);
+            });
+        }
+
+        // collapsible header click handler
+        const languageHeader = document.querySelector('.language-controls-header');
+        if (languageHeader) {
+            languageHeader.addEventListener('click', () => {
+                const controls = document.querySelector('.language-controls');
+                if (controls) {
+                    controls.classList.toggle('collapsed');
+                }
             });
         }
     }
@@ -166,6 +178,16 @@ export default class UIController {
             this.sourceLanguageSelect.value = sourceLang;
             this.targetLanguageSelect.value = targetLang;
         }
+        this.updateSelectedLanguages();
+    }
+
+    updateSelectedLanguages() {
+        const selectedLangs = document.querySelector('.selected-languages');
+        if (selectedLangs) {
+            const sourceLang = this.getLanguageName(this.sourceLanguageSelect.value);
+            const targetLang = this.getLanguageName(this.targetLanguageSelect.value);
+            selectedLangs.textContent = `${sourceLang} → ${targetLang}`;
+        }
     }
 
     updateRecordingState(isRecording) {
@@ -174,7 +196,7 @@ export default class UIController {
             // Hide/show language controls
         const languageControls = document.querySelector('.language-controls');
         if (languageControls) {
-            languageControls.classList.toggle('hidden', isRecording);
+            languageControls.classList.toggle('collapsed', isRecording);
         }
 
         if (this.micButton) {

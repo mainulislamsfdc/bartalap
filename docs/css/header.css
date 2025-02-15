@@ -51,6 +51,7 @@
     border: 1px solid rgba(0,229,255,0.2);
     box-shadow: 0 0 20px rgba(0,229,255,0.1),
                 inset 0 0 10px rgba(0,229,255,0.05);
+                transition: all 0.3s ease;
 }
 
 .language-selection {
@@ -112,4 +113,39 @@
     display: flex;
     gap: 8px;
     margin-left: auto;
+}
+
+.language-controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.selected-languages {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+.collapse-toggle {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.language-controls-content {
+    max-height: 200px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.language-controls.collapsed .language-controls-content {
+    max-height: 0;
+}
+
+.language-controls.collapsed .collapse-toggle {
+    transform: rotate(-90deg);
 }
