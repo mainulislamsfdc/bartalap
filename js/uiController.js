@@ -127,15 +127,17 @@ export default class UIController {
         localStorage.setItem('voicePreference', gender);
     }
 
+
+    //'Google UK English Male - en-GB' 'Google UK English Female - en-GB'
     speakText(text, lang) {
         if (this.synth.speaking) {
             this.synth.cancel();
         }
     
-        // Stop recording before speaking and update UI
+        // If recording, stop it before speaking
         if (this.isRecording) {
-            window.dispatchEvent(new CustomEvent("pauseRecording")); // Changed from stopRecording
-            this.updateRecordingState('paused'); // New state for paused recording
+            window.dispatchEvent(new CustomEvent("stopRecording"));
+            this.updateRecordingState('paused');
         }
     
         const utterance = new SpeechSynthesisUtterance(text);
@@ -146,8 +148,8 @@ export default class UIController {
         
         // Look for Google UK English voices
         const googleVoices = {
-            male: voices.find(voice => voice.name === 'Google UK English Male'),
-            female: voices.find(voice => voice.name === 'Google UK English Female')
+            male: voices.find(voice => voice.name === 'Google UK English Male - en-GB'),
+            female: voices.find(voice => voice.name === 'Google UK English Female - en-GB')
         };
     
         // Select the appropriate Google voice based on preference
@@ -165,10 +167,10 @@ export default class UIController {
         utterance.voice = selectedVoice;
     
         // Optimize voice characteristics for Google voices
-        if (utterance.voice?.name === 'Google UK English Female') {
+        if (utterance.voice?.name === 'Google UK English Female - en-GB') {
             utterance.pitch = 1.1;
             utterance.rate = 1.0;
-        } else if (utterance.voice?.name === 'Google UK English Male') {
+        } else if (utterance.voice?.name === 'Google UK English Male - en-GB') {
             utterance.pitch = 0.95;
             utterance.rate = 0.95;
         } else {
@@ -178,13 +180,16 @@ export default class UIController {
     
         // Event handlers
         utterance.onstart = () => {
-            this.updateRecordingState('paused');
+            // Ensure recording is stopped while speaking
+            if (this.isRecording) {
+                this.updateRecordingState('paused');
+            }
         };
     
         utterance.onend = () => {
-            // Only resume recording if it was previously paused (not stopped)
-            if (this.recordingState === 'paused') {
-                window.dispatchEvent(new CustomEvent("resumeRecording"));
+            // Resume recording only if it was previously active
+            if (this.micButton && this.micButton.classList.contains('paused')) {
+                window.dispatchEvent(new CustomEvent("startRecording"));
                 this.updateRecordingState('recording');
             }
         };
@@ -216,13 +221,13 @@ export default class UIController {
     }
 
     updateRecordingState(state) {
-        // Keep track of the current recording state
-        this.recordingState = state;
-    
+        // Update isRecording based on state
+        this.isRecording = state === 'recording';
+        
         // Update UI based on state
         if (this.micButton) {
             // Remove all possible state classes
-            this.micButton.classList.remove("recording", "paused", "stopped");
+            this.micButton.classList.remove("recording", "paused");
             
             // Add appropriate state class
             if (state === 'recording') {
@@ -236,11 +241,9 @@ export default class UIController {
             if (micIcon) {
                 switch (state) {
                     case 'recording':
-                        micIcon.textContent = "⏸"; // pause symbol
+                        micIcon.textContent = "⏹"; // stop symbol
                         break;
                     case 'paused':
-                        micIcon.textContent = "▶️"; // play symbol
-                        break;
                     case 'stopped':
                     default:
                         micIcon.textContent = "🎤"; // microphone symbol
@@ -256,9 +259,8 @@ export default class UIController {
                     this.recordingStatus.textContent = "Recording...";
                     break;
                 case 'paused':
-                    this.recordingStatus.textContent = "Paused";
+                    this.recordingStatus.textContent = "";
                     break;
-                case 'stopped':
                 default:
                     this.recordingStatus.textContent = "";
                     break;
