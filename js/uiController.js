@@ -134,7 +134,7 @@ export default class UIController {
             this.synth.cancel();
         }
     
-        // If recording, stop it before speaking
+        // If recording, pause it before speaking
         if (this.isRecording) {
             window.dispatchEvent(new CustomEvent("stopRecording"));
             this.updateRecordingState('paused');
@@ -178,17 +178,16 @@ export default class UIController {
             utterance.rate = this.preferredVoiceGender === 'female' ? 1.0 : 0.95;
         }
     
-        // Event handlers
+        // Event handlers with proper state management
         utterance.onstart = () => {
-            // Ensure recording is stopped while speaking
             if (this.isRecording) {
                 this.updateRecordingState('paused');
             }
         };
     
         utterance.onend = () => {
-            // Resume recording only if it was previously active
-            if (this.micButton && this.micButton.classList.contains('paused')) {
+            // Only resume recording if we were previously recording
+            if (this.micButton.classList.contains('paused')) {
                 window.dispatchEvent(new CustomEvent("startRecording"));
                 this.updateRecordingState('recording');
             }
@@ -226,14 +225,20 @@ export default class UIController {
         
         // Update UI based on state
         if (this.micButton) {
-            // Remove all possible state classes
-            this.micButton.classList.remove("recording", "paused");
+            // First remove all state classes
+            this.micButton.classList.remove("recording", "paused", "stopped");
             
-            // Add appropriate state class
+            // Add the appropriate state class
             if (state === 'recording') {
                 this.micButton.classList.add("recording");
             } else if (state === 'paused') {
                 this.micButton.classList.add("paused");
+                // Stop the ripple animation when paused
+                this.micButton.style.animation = 'none';
+            } else {
+                this.micButton.classList.add("stopped");
+                // Reset animation when stopped
+                this.micButton.style.animation = 'float 3s ease-in-out infinite';
             }
     
             // Update the icon based on state
@@ -244,9 +249,11 @@ export default class UIController {
                         micIcon.textContent = "⏹"; // stop symbol
                         break;
                     case 'paused':
+                        micIcon.textContent = "🎤"; // mic symbol
+                        break;
                     case 'stopped':
                     default:
-                        micIcon.textContent = "🎤"; // microphone symbol
+                        micIcon.textContent = "🎤"; // mic symbol
                         break;
                 }
             }
@@ -259,7 +266,7 @@ export default class UIController {
                     this.recordingStatus.textContent = "Recording...";
                     break;
                 case 'paused':
-                    this.recordingStatus.textContent = "";
+                    this.recordingStatus.textContent = "Paused";
                     break;
                 default:
                     this.recordingStatus.textContent = "";
@@ -270,7 +277,11 @@ export default class UIController {
         // Hide/show language controls
         const languageControls = document.querySelector('.language-controls');
         if (languageControls) {
-            languageControls.classList.toggle('collapsed', state === 'recording');
+            if (state === 'recording') {
+                languageControls.classList.add('collapsed');
+            } else {
+                languageControls.classList.remove('collapsed');
+            }
         }
     }
 
