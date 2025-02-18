@@ -132,36 +132,61 @@ export default class UIController {
             this.synth.cancel();
         }
     
-        // Stop recording before speaking
+        // Stop recording before speaking and update UI
         if (this.isRecording) {
-            window.dispatchEvent(new CustomEvent("stopRecording"));
-            this.updateRecordingState(false);  // Set recording state to false
+            window.dispatchEvent(new CustomEvent("pauseRecording")); // Changed from stopRecording
+            this.updateRecordingState('paused'); // New state for paused recording
         }
     
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = lang;
     
-        // Ensure voices are loaded
-        const voices = speechSynthesis.getVoices();
-    
-        // Try selecting a voice based on language and gender
-        utterance.voice = voices.find(voice => 
-            voice.lang.startsWith(lang) && 
-            (this.preferredVoiceGender === 'female' ? voice.name.includes("Female") : voice.name.includes("Male"))
-        ) || voices.find(voice => voice.lang.startsWith(lang)) || null;
-    
-        // Set pitch based on gender
-        utterance.pitch = this.preferredVoiceGender === 'female' ? 1.2 : 0.9;
-    
-        // Prevent microphone from restarting while speech is playing
-        utterance.onstart = () => {
-            this.updateRecordingState(false); // Ensure recording state is false
+        // Get available voices
+        const voices = this.synth.getVoices();
+        
+        // Look for Google UK English voices
+        const googleVoices = {
+            male: voices.find(voice => voice.name === 'Google UK English Male'),
+            female: voices.find(voice => voice.name === 'Google UK English Female')
         };
     
-        // Allow recording to resume after speech ends
+        // Select the appropriate Google voice based on preference
+        let selectedVoice = googleVoices[this.preferredVoiceGender];
+    
+        // Fallback logic if Google voices aren't available
+        if (!selectedVoice) {
+            const genderKeyword = this.preferredVoiceGender === 'female' ? 'Female' : 'Male';
+            selectedVoice = voices.find(voice => 
+                voice.lang.startsWith(lang) && 
+                voice.name.includes(genderKeyword)
+            ) || voices.find(voice => voice.lang.startsWith(lang)) || voices[0];
+        }
+    
+        utterance.voice = selectedVoice;
+    
+        // Optimize voice characteristics for Google voices
+        if (utterance.voice?.name === 'Google UK English Female') {
+            utterance.pitch = 1.1;
+            utterance.rate = 1.0;
+        } else if (utterance.voice?.name === 'Google UK English Male') {
+            utterance.pitch = 0.95;
+            utterance.rate = 0.95;
+        } else {
+            utterance.pitch = this.preferredVoiceGender === 'female' ? 1.2 : 0.9;
+            utterance.rate = this.preferredVoiceGender === 'female' ? 1.0 : 0.95;
+        }
+    
+        // Event handlers
+        utterance.onstart = () => {
+            this.updateRecordingState('paused');
+        };
+    
         utterance.onend = () => {
-            window.dispatchEvent(new CustomEvent("startRecording"));
-            this.updateRecordingState(true); // Resume recording after speech ends
+            // Only resume recording if it was previously paused (not stopped)
+            if (this.recordingState === 'paused') {
+                window.dispatchEvent(new CustomEvent("resumeRecording"));
+                this.updateRecordingState('recording');
+            }
         };
     
         this.synth.speak(utterance);
@@ -190,24 +215,60 @@ export default class UIController {
         }
     }
 
-    updateRecordingState(isRecording) {
-        this.isRecording = isRecording;
-
-            // Hide/show language controls
-        const languageControls = document.querySelector('.language-controls');
-        if (languageControls) {
-            languageControls.classList.toggle('collapsed', isRecording);
-        }
-
+    updateRecordingState(state) {
+        // Keep track of the current recording state
+        this.recordingState = state;
+    
+        // Update UI based on state
         if (this.micButton) {
-            this.micButton.classList.toggle("recording", isRecording);
+            // Remove all possible state classes
+            this.micButton.classList.remove("recording", "paused", "stopped");
+            
+            // Add appropriate state class
+            if (state === 'recording') {
+                this.micButton.classList.add("recording");
+            } else if (state === 'paused') {
+                this.micButton.classList.add("paused");
+            }
+    
+            // Update the icon based on state
             const micIcon = this.micButton.querySelector(".mic-icon");
             if (micIcon) {
-                micIcon.textContent = isRecording ? "⏹" : "🎤";
+                switch (state) {
+                    case 'recording':
+                        micIcon.textContent = "⏸"; // pause symbol
+                        break;
+                    case 'paused':
+                        micIcon.textContent = "▶️"; // play symbol
+                        break;
+                    case 'stopped':
+                    default:
+                        micIcon.textContent = "🎤"; // microphone symbol
+                        break;
+                }
             }
         }
+    
+        // Update status text
         if (this.recordingStatus) {
-            this.recordingStatus.textContent = isRecording ? "Recording..." : "";
+            switch (state) {
+                case 'recording':
+                    this.recordingStatus.textContent = "Recording...";
+                    break;
+                case 'paused':
+                    this.recordingStatus.textContent = "Paused";
+                    break;
+                case 'stopped':
+                default:
+                    this.recordingStatus.textContent = "";
+                    break;
+            }
+        }
+    
+        // Hide/show language controls
+        const languageControls = document.querySelector('.language-controls');
+        if (languageControls) {
+            languageControls.classList.toggle('collapsed', state === 'recording');
         }
     }
 
