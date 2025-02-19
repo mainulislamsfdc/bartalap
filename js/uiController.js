@@ -41,39 +41,40 @@ export default class UIController {
     }
 
     updateUI(state) {
+        console.log('Updating UI with state:', state);
         if (this.micButton) {
             // Update mic button
             this.micButton.classList.remove('recording', 'paused', 'stopped');
             this.micButton.classList.add(state.recordingState);
             
+            // Update the icon based on state
             const micIcon = this.micButton.querySelector('.mic-icon');
             if (micIcon) {
                 switch (state.recordingState) {
                     case 'recording':
-                        micIcon.textContent = '⏹';
+                        micIcon.textContent = '⏸';
                         this.micButton.style.animation = 'ripple 1.5s linear infinite';
                         break;
                     case 'paused':
-                        micIcon.textContent = '🎤';
+                        micIcon.textContent = '▶';
                         this.micButton.style.animation = 'none';
                         break;
                     case 'stopped':
+                    default:
                         micIcon.textContent = '🎤';
                         this.micButton.style.animation = 'float 3s ease-in-out infinite';
                         break;
                 }
             }
-        }
-
-        // Update recording status
-        if (this.recordingStatus) {
-            this.recordingStatus.textContent = state.isRecording ? 'Recording...' : '';
-        }
-
-        // Disable mic button during speech
-        if (this.micButton) {
+    
+            // Disable mic button during speech
             this.micButton.disabled = state.isSpeaking;
         }
+
+                // Update recording status
+            if (this.recordingStatus) {
+                this.recordingStatus.textContent = state.isRecording ? 'Recording...' : '';
+            }
     }
 
     initializeElements() {

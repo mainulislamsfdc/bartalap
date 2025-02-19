@@ -53,22 +53,32 @@ class App {
         console.log('DEBUG: Setting up event listeners');
         
         this.uiController.micButton.addEventListener('click', () => {
-        console.log('DEBUG: Mic button clicked');
-        const currentState = this.audioHandler.recordingState;
+            console.log('DEBUG: Mic button clicked');
+            const currentState = this.audioHandler.recordingState || audioStateManager.state.recordingState;
+            console.log('Current recording state:', currentState);
             
-        switch (currentState) {
-            case 'stopped':
-                const selectedLanguage = this.uiController.sourceLanguageSelect.value;
-                this.audioHandler.startRecording(selectedLanguage);
-                break;
-            case 'recording':
-                this.audioHandler.pauseRecording();
-                break;
-            case 'paused':
-                this.audioHandler.resumeRecording();
-                break;
-        }
+            if (window.speechSynthesis.speaking) {
+                console.log('Speech is active, blocking mic action');
+                return;
+            }
+    
+            switch (currentState) {
+                case 'stopped':
+                    const selectedLanguage = this.uiController.sourceLanguageSelect.value;
+                    console.log('Starting recording with language:', selectedLanguage);
+                    this.audioHandler.startRecording(selectedLanguage);
+                    break;
+                case 'recording':
+                    console.log('Pausing recording');
+                    this.audioHandler.pauseRecording();
+                    break;
+                case 'paused':
+                    console.log('Resuming recording');
+                    this.audioHandler.resumeRecording();
+                    break;
+            }
         });
+    
 
         // Add a long press or double click to stop completely
         this.uiController.micButton.addEventListener('dblclick', (e) => {

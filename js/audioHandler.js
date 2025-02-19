@@ -43,7 +43,7 @@ export default class AudioHandler {
             }
 
             this.recognition = new webkitSpeechRecognition();
-            this.setupContinuousRecognition();
+            
             this.setupRecognition();
            // console.log('DEBUG: AudioHandler initialized successfully');
             return true;
@@ -60,7 +60,11 @@ export default class AudioHandler {
         this.recognition.lang = this.sourceLang;
 
         this.recognition.onstart = () => {
-            audioStateManager.setState({ isRecording: true, recordingState: 'recording' });
+            this.isRecording = true;
+            audioStateManager.setState({ 
+                isRecording: true, 
+                recordingState: 'recording' 
+            });
         };
 
         this.recognition.onend = () => {
@@ -80,11 +84,21 @@ export default class AudioHandler {
         };
 
         this.recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+    
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    this.processTranscript(transcript.trim(), true);
+                    finalTranscript += transcript;
+                    this.processChunk(transcript.trim(), true);
+                } else {
+                    interimTranscript += transcript;
                 }
+            }
+    
+            if (interimTranscript) {
+                this.processChunk(interimTranscript.trim(), false);
             }
         };
     }
@@ -170,54 +184,54 @@ export default class AudioHandler {
                 return;
             }
 
-            if (audioStateManager.startRecording()) {
-                this.recognition.lang = languageCode;
-                await this.recognition.start();
-            }
+            this.recognition.lang = languageCode;
+            await this.recognition.start();
+            this.isRecording = true;
+            this.recordingState = 'recording';
+            audioStateManager.startRecording();
+
         } catch (error) {
             console.error('Start recording error:', error);
             this.stopRecording();
         }
     }
 
-    pauseRecording() {
-        try {
-            if (this.recordingState !== 'recording') return;
+            pauseRecording() {
+            try {
+                if (audioStateManager.state.recordingState !== 'recording') return;
 
-            this.recognition.stop();
-            this.isRecording = false;
-            this.recordingState = 'paused';
-
-            window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { 
+                this.recognition.stop();
+                this.isRecording = false;
+                this.recordingState = 'paused';
+                audioStateManager.setState({
                     isRecording: false,
-                    state: 'paused'
-                }
-            }));
+                    recordingState: 'paused'
+                });
 
-        } catch (error) {
-            console.error('DEBUG: Pause recording error:', error);
+            } catch (error) {
+                console.error('Pause recording error:', error);
+            }
         }
-    }
 
-    resumeRecording() {
-        try {
-            if (this.recordingState !== 'paused') return;
-            
-            this.startRecording(this.recognition.lang);
-        } catch (error) {
-            console.error('DEBUG: Resume recording error:', error);
+        resumeRecording() {
+            try {
+                if (audioStateManager.state.recordingState !== 'paused') return;
+                this.startRecording(this.recognition.lang);
+            } catch (error) {
+                console.error('Resume recording error:', error);
+            }
         }
-    }
 
-    async stopRecording() {
-        try {
-            await this.recognition.stop();
-            audioStateManager.stopRecording();
-        } catch (error) {
-            console.error('Stop recording error:', error);
+        async stopRecording() {
+            try {
+                await this.recognition.stop();
+                this.isRecording = false;
+                this.recordingState = 'stopped';
+                audioStateManager.stopRecording();
+            } catch (error) {
+                console.error('Stop recording error:', error);
+            }
         }
-    }
 
     processTranscript(text, isFinal) {
         if (text) {
