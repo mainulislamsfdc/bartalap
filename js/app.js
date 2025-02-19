@@ -9,6 +9,7 @@ import TranslationService from './translationService.js';
 import AudioHandler from './audioHandler.js';
 import UIController from './uiController.js';
 import { initializePWAInstall } from './pwaInstall.js'; 
+import { audioStateManager } from './audioStateManager.js';
 
 class App {
     constructor() {

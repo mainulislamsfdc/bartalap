@@ -1,3 +1,5 @@
+import { audioStateManager } from './audioStateManager.js';
+
 export default class UIController {
     constructor() {
         if (typeof window === 'undefined') {
@@ -31,6 +33,47 @@ export default class UIController {
                 this.speakText(text, lang);
             }
         });
+
+        // Subscribe to state changes
+        audioStateManager.subscribe(state => {
+            this.updateUI(state);
+        });
+    }
+
+    updateUI(state) {
+        if (this.micButton) {
+            // Update mic button
+            this.micButton.classList.remove('recording', 'paused', 'stopped');
+            this.micButton.classList.add(state.recordingState);
+            
+            const micIcon = this.micButton.querySelector('.mic-icon');
+            if (micIcon) {
+                switch (state.recordingState) {
+                    case 'recording':
+                        micIcon.textContent = '⏹';
+                        this.micButton.style.animation = 'ripple 1.5s linear infinite';
+                        break;
+                    case 'paused':
+                        micIcon.textContent = '🎤';
+                        this.micButton.style.animation = 'none';
+                        break;
+                    case 'stopped':
+                        micIcon.textContent = '🎤';
+                        this.micButton.style.animation = 'float 3s ease-in-out infinite';
+                        break;
+                }
+            }
+        }
+
+        // Update recording status
+        if (this.recordingStatus) {
+            this.recordingStatus.textContent = state.isRecording ? 'Recording...' : '';
+        }
+
+        // Disable mic button during speech
+        if (this.micButton) {
+            this.micButton.disabled = state.isSpeaking;
+        }
     }
 
     initializeElements() {
@@ -132,6 +175,8 @@ export default class UIController {
     speakText(text, lang) {
         if (this.synth.speaking) {
             this.synth.cancel();
+            audioStateManager.stopSpeaking();
+            return;
         }
     
         // If recording, pause it before speaking
@@ -180,17 +225,16 @@ export default class UIController {
     
         // Event handlers with proper state management
         utterance.onstart = () => {
-            if (this.isRecording) {
-                this.updateRecordingState('paused');
-            }
+            audioStateManager.startSpeaking();
         };
     
         utterance.onend = () => {
-            // Only resume recording if we were previously recording
-            if (this.micButton.classList.contains('paused')) {
-                window.dispatchEvent(new CustomEvent("startRecording"));
-                this.updateRecordingState('recording');
-            }
+            audioStateManager.stopSpeaking();
+        };
+
+        utterance.onerror = (event) => {
+            console.error('Speech synthesis error:', event);
+            audioStateManager.stopSpeaking();
         };
     
         this.synth.speak(utterance);

@@ -1,4 +1,5 @@
 // audioHandler.js
+import { audioStateManager } from './audioStateManager.js';
 export default class AudioHandler {
     constructor() {
         if (typeof window === 'undefined') {
@@ -11,7 +12,17 @@ export default class AudioHandler {
         this.processingTimeout = null;
         this.sourceLang = "en-US";
         this.targetLang = "kn-IN";
-        this.recordingState = 'stopped';
+         // Subscribe to state changes
+         audioStateManager.subscribe(state => {
+            this.handleStateChange(state);
+        });
+    }
+
+    handleStateChange(state) {
+        if (state.isSpeaking && this.recognition) {
+            // If speech starts while recording, stop recording
+            this.stopRecording();
+        }
     }
 
     setLanguages(sourceLang, targetLang) {
@@ -33,12 +44,49 @@ export default class AudioHandler {
 
             this.recognition = new webkitSpeechRecognition();
             this.setupContinuousRecognition();
+            this.setupRecognition();
            // console.log('DEBUG: AudioHandler initialized successfully');
             return true;
         } catch (error) {
             console.error('DEBUG: Audio initialization error:', error);
             return false;
         }
+    }
+
+    setupRecognition() {
+        this.recognition.continuous = true;
+        this.recognition.interimResults = false;
+        this.recognition.maxAlternatives = 1;
+        this.recognition.lang = this.sourceLang;
+
+        this.recognition.onstart = () => {
+            audioStateManager.setState({ isRecording: true, recordingState: 'recording' });
+        };
+
+        this.recognition.onend = () => {
+            if (audioStateManager.state.recordingState === 'recording') {
+                // Only restart if we're supposed to be recording
+                this.restartRecognition();
+            }
+        };
+
+        this.recognition.onerror = (event) => {
+            console.error('Recognition error:', event.error);
+            if (event.error === 'no-speech' || event.error === 'audio-capture') {
+                this.restartRecognition();
+            } else {
+                this.stopRecording();
+            }
+        };
+
+        this.recognition.onresult = (event) => {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    this.processTranscript(transcript.trim(), true);
+                }
+            }
+        };
     }
 
     setupContinuousRecognition() {
@@ -117,28 +165,17 @@ export default class AudioHandler {
 
     async startRecording(languageCode) {
         try {
-           // console.log('DEBUG: Starting recording with language:', languageCode);
-            if (this.isRecording) return;
-            if (this.recordingState === 'recording') return;
+            if (audioStateManager.state.isSpeaking) {
+                console.log('Cannot start recording while speaking');
+                return;
+            }
 
-            this.recognition.lang = languageCode;
-            
-            // Clear any existing state
-            this.buffer = '';
-            this.lastProcessedTimestamp = Date.now();
-            clearTimeout(this.processingTimeout);
-
-            await this.recognition.start();
-            this.isRecording = true;
-            this.recordingState = 'recording';
-
-            window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { isRecording: true,state: 'recording' }
-            }));
-
-           // console.log('DEBUG: Recording started successfully');
+            if (audioStateManager.startRecording()) {
+                this.recognition.lang = languageCode;
+                await this.recognition.start();
+            }
         } catch (error) {
-            console.error('DEBUG: Start recording error:', error);
+            console.error('Start recording error:', error);
             this.stopRecording();
         }
     }
@@ -175,28 +212,29 @@ export default class AudioHandler {
 
     async stopRecording() {
         try {
-            if (this.recordingState === 'stopped') return;
-
-            clearTimeout(this.processingTimeout);
-            
-            if (this.buffer.trim()) {
-                this.processChunk(this.buffer.trim(), true);
-                this.buffer = '';
-            }
-
             await this.recognition.stop();
-            this.isRecording = false;
-            this.recordingState = 'stopped';
-
-            window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { 
-                    isRecording: false,
-                    state: 'stopped'
-                }
-            }));
-
+            audioStateManager.stopRecording();
         } catch (error) {
-            console.error('DEBUG: Stop recording error:', error);
+            console.error('Stop recording error:', error);
+        }
+    }
+
+    processTranscript(text, isFinal) {
+        if (text) {
+            window.dispatchEvent(new CustomEvent('speechResult', {
+                detail: { transcript: text, isFinal }
+            }));
+        }
+    }
+
+    restartRecognition() {
+        if (audioStateManager.state.recordingState === 'recording' && !audioStateManager.state.isSpeaking) {
+            try {
+                this.recognition.start();
+            } catch (error) {
+                console.error('Error restarting recognition:', error);
+                setTimeout(() => this.restartRecognition(), 1000);
+            }
         }
     }
 }
