@@ -11,6 +11,7 @@ export default class AudioHandler {
         this.processingTimeout = null;
         this.sourceLang = "en-US";
         this.targetLang = "kn-IN";
+        this.recordingState = 'stopped';
     }
 
     setLanguages(sourceLang, targetLang) {
@@ -118,6 +119,7 @@ export default class AudioHandler {
         try {
            // console.log('DEBUG: Starting recording with language:', languageCode);
             if (this.isRecording) return;
+            if (this.recordingState === 'recording') return;
 
             this.recognition.lang = languageCode;
             
@@ -128,9 +130,10 @@ export default class AudioHandler {
 
             await this.recognition.start();
             this.isRecording = true;
+            this.recordingState = 'recording';
 
             window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { isRecording: true }
+                detail: { isRecording: true,state: 'recording' }
             }));
 
            // console.log('DEBUG: Recording started successfully');
@@ -140,14 +143,42 @@ export default class AudioHandler {
         }
     }
 
+    pauseRecording() {
+        try {
+            if (this.recordingState !== 'recording') return;
+
+            this.recognition.stop();
+            this.isRecording = false;
+            this.recordingState = 'paused';
+
+            window.dispatchEvent(new CustomEvent('recordingStateChange', {
+                detail: { 
+                    isRecording: false,
+                    state: 'paused'
+                }
+            }));
+
+        } catch (error) {
+            console.error('DEBUG: Pause recording error:', error);
+        }
+    }
+
+    resumeRecording() {
+        try {
+            if (this.recordingState !== 'paused') return;
+            
+            this.startRecording(this.recognition.lang);
+        } catch (error) {
+            console.error('DEBUG: Resume recording error:', error);
+        }
+    }
+
     async stopRecording() {
         try {
-           // console.log('DEBUG: Stopping recording');
-            if (!this.isRecording) return;
+            if (this.recordingState === 'stopped') return;
 
             clearTimeout(this.processingTimeout);
             
-            // Process any remaining buffer before stopping
             if (this.buffer.trim()) {
                 this.processChunk(this.buffer.trim(), true);
                 this.buffer = '';
@@ -155,12 +186,15 @@ export default class AudioHandler {
 
             await this.recognition.stop();
             this.isRecording = false;
+            this.recordingState = 'stopped';
 
             window.dispatchEvent(new CustomEvent('recordingStateChange', {
-                detail: { isRecording: false }
+                detail: { 
+                    isRecording: false,
+                    state: 'stopped'
+                }
             }));
 
-            //console.log('DEBUG: Recording stopped successfully');
         } catch (error) {
             console.error('DEBUG: Stop recording error:', error);
         }

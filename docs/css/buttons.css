@@ -71,11 +71,29 @@
     font-size: 1.4rem;
     position: relative;
     animation: float 3s ease-in-out infinite;
+
 }
 
 .mic-button.recording {
     animation: ripple 1.5s linear infinite;
     background: #FF4081;
+}
+
+.mic-button.paused {
+    animation: none;
+    background: var(--accent-color);
+    opacity: 0.8;
+}
+
+.mic-button.stopped {
+    animation: float 3s ease-in-out infinite;
+    background: var(--primary-color);
+}
+
+/* Update the hover state */
+.mic-button:hover:not(.recording) {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(0,229,255,0.5);
 }
 
 .voice-btn {

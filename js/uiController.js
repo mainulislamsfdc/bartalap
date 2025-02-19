@@ -221,66 +221,59 @@ export default class UIController {
 
     updateRecordingState(state) {
         // Update isRecording based on state
-        this.isRecording = state === 'recording';
+        //this.isRecording = state === 'recording';
+        
         
         // Update UI based on state
         if (this.micButton) {
-            // First remove all state classes
+            // Remove all state classes first
             this.micButton.classList.remove("recording", "paused", "stopped");
             
             // Add the appropriate state class
-            if (state === 'recording') {
-                this.micButton.classList.add("recording");
-            } else if (state === 'paused') {
-                this.micButton.classList.add("paused");
-                // Stop the ripple animation when paused
-                this.micButton.style.animation = 'none';
-            } else {
-                this.micButton.classList.add("stopped");
-                // Reset animation when stopped
-                this.micButton.style.animation = 'float 3s ease-in-out infinite';
-            }
-    
-            // Update the icon based on state
-            const micIcon = this.micButton.querySelector(".mic-icon");
+            this.micButton.classList.add(state);
+
+            // Update the icon and animation based on state
+            const micIcon = this.micButton.querySelector('.mic-icon');
             if (micIcon) {
                 switch (state) {
-                    case 'recording':
-                        micIcon.textContent = "⏹"; // stop symbol
+                    case "recording":
+                        micIcon.textContent = '⏸'; // pause symbol
+                        this.micButton.style.animation = 'ripple 1.5s linear infinite';
                         break;
-                    case 'paused':
-                        micIcon.textContent = "🎤"; // mic symbol
+                    case "paused":
+                        micIcon.textContent = '▶'; // play symbol
+                        this.micButton.style.animation = 'none';
                         break;
-                    case 'stopped':
-                    default:
-                        micIcon.textContent = "🎤"; // mic symbol
+                    case "stopped":
+                        micIcon.textContent = '🎤'; // mic symbol
+                        this.micButton.style.animation = 'float 3s ease-in-out infinite';
                         break;
                 }
             }
         }
     
-        // Update status text
+        // Update status text if it exists
         if (this.recordingStatus) {
             switch (state) {
-                case 'recording':
+                case "recording":
                     this.recordingStatus.textContent = "Recording...";
                     break;
-                case 'paused':
+                case "paused":
                     this.recordingStatus.textContent = "Paused";
                     break;
-                default:
+                case "stopped":
                     this.recordingStatus.textContent = "";
                     break;
             }
-        }
     
-        // Hide/show language controls
-        const languageControls = document.querySelector('.language-controls');
-        if (languageControls) {
-            if (state === 'recording') {
-                languageControls.classList.add('collapsed');
-            } else {
-                languageControls.classList.remove('collapsed');
+            // Hide/show language controls
+            const languageControls = document.querySelector('.language-controls');
+            if (languageControls) {
+                if (state === 'recording') {
+                    languageControls.classList.add('collapsed');
+                } else {
+                    languageControls.classList.remove('collapsed');
+                }
             }
         }
     }
