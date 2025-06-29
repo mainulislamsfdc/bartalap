@@ -150,13 +150,12 @@ export default class AudioHandler {
         };
     }
 
-    processChunk(text, isFinal) {
-        if (text) {
-         //   console.log('DEBUG: Processing chunk:', { text, isFinal });
-            window.dispatchEvent(new CustomEvent('speechResult', {
-                detail: {
-                    transcript: text,
-                    isFinal: isFinal
+processChunk(text, isFinal, isFromTranslation = false) {
+    if (text && !isFromTranslation) {
+        window.dispatchEvent(new CustomEvent('speechResult', {
+            detail: {
+                transcript: text,
+                isFinal: isFinal
                 }
             }));
         }
