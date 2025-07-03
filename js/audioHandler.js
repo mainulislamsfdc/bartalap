@@ -19,11 +19,11 @@ export default class AudioHandler {
     }
 
     handleStateChange(state) {
-        if (state.isSpeaking && this.recognition) {
-            // If speech starts while recording, stop recording
-            this.stopRecording();
-        }
+    if (state.isSpeaking && this.recognition && this.recordingState === 'recording') {
+        this.stopRecording(); // Only stop if it was recording
     }
+}
+
 
     setLanguages(sourceLang, targetLang) {
        // console.log('DEBUG: Setting languages:', { sourceLang, targetLang });
