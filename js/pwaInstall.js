@@ -48,14 +48,12 @@ export function initializePWAInstall() {
 
         // Check if already installed
         isInstalled = checkIfInstalled();
-        if (isInstalled) {
-            console.log('PWA is already installed');
-            installButton.style.display = 'none';
-            return;
-        }
-
-        // Show install button initially (will be hidden if not installable)
-        installButton.style.display = 'none'; // Start hidden, show only when installable
+        
+        // ALWAYS show the install button regardless of installation status
+        installButton.style.display = 'inline-flex';
+        
+        // Update button text based on installation status
+        updateInstallButtonText();
 
         // Handle the beforeinstallprompt event
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -63,17 +61,21 @@ export function initializePWAInstall() {
             e.preventDefault();
             deferredPrompt = e;
             
-            // Show the install button only if not already installed
-            if (!isInstalled) {
-                installButton.style.display = 'inline-flex';
-                console.log('PWA Install: Install button shown');
-            }
+            // Update button text since native install is available
+            updateInstallButtonText();
+            console.log('PWA Install: Install button updated for native install');
         });
 
         // Handle install button click
         installButton.addEventListener('click', async (e) => {
             console.log('PWA Install: Install button clicked');
             e.preventDefault();
+            
+            // If already installed, show reinstall/info message
+            if (isInstalled) {
+                showAlreadyInstalledMessage();
+                return;
+            }
             
             if (!deferredPrompt) {
                 console.log('PWA Install: No deferred prompt available');
@@ -83,9 +85,6 @@ export function initializePWAInstall() {
             }
 
             try {
-                // Hide the button immediately
-                installButton.style.display = 'none';
-                
                 // Show the install prompt
                 console.log('PWA Install: Showing install prompt');
                 deferredPrompt.prompt();
@@ -97,26 +96,26 @@ export function initializePWAInstall() {
                 if (outcome === 'accepted') {
                     console.log('PWA Install: User accepted the install prompt');
                     isInstalled = true;
+                    updateInstallButtonText();
                 } else {
                     console.log('PWA Install: User dismissed the install prompt');
-                    // Show button again if user declined
-                    installButton.style.display = 'inline-flex';
                 }
                 
                 deferredPrompt = null;
             } catch (error) {
                 console.error('PWA Install: Error during installation:', error);
-                // Show button again on error
-                installButton.style.display = 'inline-flex';
+                showManualInstallInstructions();
             }
         });
 
         // Handle successful installation
         window.addEventListener('appinstalled', (e) => {
             console.log('PWA Install: PWA was installed successfully');
-            installButton.style.display = 'none';
             isInstalled = true;
             deferredPrompt = null;
+            
+            // Update button text but keep it visible
+            updateInstallButtonText();
             
             // Show success message
             showInstallSuccess();
@@ -139,6 +138,40 @@ export function initializePWAInstall() {
         }, 3000);
     });
 
+    // Update install button text based on current state
+    function updateInstallButtonText() {
+        const installButton = document.getElementById('installButton');
+        if (!installButton) return;
+        
+        if (isInstalled) {
+            installButton.innerHTML = '✅ App Installed';
+            installButton.title = 'App is installed - click for more info';
+        } else if (deferredPrompt) {
+            installButton.innerHTML = '📱 Install App';
+            installButton.title = 'Install this app to your device';
+        } else {
+            installButton.innerHTML = '📱 Install App';
+            installButton.title = 'Install this app to your device';
+        }
+    }
+
+    // Show message when app is already installed
+    function showAlreadyInstalledMessage() {
+        const message = `
+✅ App is already installed!
+
+The Bartalap app is installed on your device. You can:
+• Find it in your app drawer/home screen
+• Open it directly from there
+• Enjoy offline functionality
+• Get faster performance
+
+If you want to reinstall, you can uninstall first from your device settings.
+        `.trim();
+        
+        alert(message);
+    }
+
     // Show manual install instructions for unsupported browsers
     function showManualInstallInstructions() {
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -147,11 +180,23 @@ export function initializePWAInstall() {
         let instructions = '';
         
         if (isIOS) {
-            instructions = 'To install this app on iOS:\n1. Tap the Share button\n2. Select "Add to Home Screen"\n3. Tap "Add"';
+            instructions = `To install Bartalap on iOS:
+1. Tap the Share button (⎋) in Safari
+2. Scroll down and select "Add to Home Screen"
+3. Tap "Add" to install
+4. Find the app icon on your home screen`;
         } else if (isAndroid) {
-            instructions = 'To install this app on Android:\n1. Tap the menu (⋮) in your browser\n2. Select "Add to Home screen" or "Install app"\n3. Tap "Add"';
+            instructions = `To install Bartalap on Android:
+1. Tap the menu (⋮) in your browser
+2. Select "Add to Home screen" or "Install app"
+3. Tap "Add" or "Install"
+4. Find the app in your app drawer`;
         } else {
-            instructions = 'To install this app:\n1. Look for an install icon in your browser\'s address bar\n2. Or check your browser\'s menu for "Install" or "Add to Home Screen"';
+            instructions = `To install Bartalap:
+1. Look for an install icon (⊕) in your browser's address bar
+2. Or check your browser's menu for "Install" or "Add to Home Screen"
+3. Follow the prompts to install
+4. Access the app from your desktop/home screen`;
         }
         
         alert(instructions);
@@ -172,15 +217,20 @@ export function initializePWAInstall() {
             z-index: 10000;
             font-size: 14px;
             max-width: 300px;
+            text-align: center;
         `;
-        successDiv.textContent = '✅ App installed successfully!';
+        successDiv.innerHTML = `
+            <div style="font-size: 18px; margin-bottom: 5px;">✅</div>
+            <div>Bartalap installed successfully!</div>
+            <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;">You can now use the app offline</div>
+        `;
         document.body.appendChild(successDiv);
         
         setTimeout(() => {
             if (successDiv.parentElement) {
                 successDiv.remove();
             }
-        }, 3000);
+        }, 4000);
     }
 
     // Debug function to check install requirements
