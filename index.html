@@ -17,57 +17,49 @@
                      <img src="images/logo.png">
                     <h1> Connecting Societies <br> Bridging Languages</h1>
                 </div>
-                <div class="language-controls collapsed">
-                    <div class="language-controls-header">
-                        <span class="selected-languages">Language Settings</span>
-                        <button class="collapse-toggle">▼</button>
-                    </div>
-                    <div class="language-controls-content">
-                        <div class="language-selection">
-                            <div class="source-language">
-                                <label class="golden-text" for="sourceLanguageSelect">From:</label>
-                                <select id="sourceLanguageSelect" class="language-select">
-                                    <option value="en-US">English</option>
-                                    <option value="hi-IN">Hindi</option>
-                                    <option value="bn-IN">Bengali</option>
-                                    <option value="kn-IN">Kannada</option>
-                                    <option value="ta-IN">Tamil</option>
-                                    <option value="te-IN">Telugu</option>
-                                    <option value="ml-IN">Malayalam</option>
-                                </select>
-                            </div>
-                            
-                            <button id="switchLanguages" class="switch-button" aria-label="Switch languages">
-                                ⇄
-                            </button>
-                    
-                            <div class="target-language">
-                                <label class="golden-text" for="targetLanguageSelect">To:</label>
-                                <select id="targetLanguageSelect" class="language-select">
-                                    <option value="kn-IN">Kannada</option>
-                                    <option value="hi-IN">Hindi</option>
-                                    <option value="bn-IN">Bengali</option>
-                                    <option value="ta-IN">Tamil</option>
-                                    <option value="te-IN">Telugu</option>
-                                    <option value="ml-IN">Malayalam</option>
-                                    <option value="en-US">English</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <label class="golden-text"><i>Press the mic button to record short speeches and read/listen
-                            the translation in selected language.</i></label>
-                    </div>
-            </div>
+                
             </header>
 
             <main class="translation-container">
                 
                 <div id="translationHistory" class="translation-history">
+                    <label>Select the from/to languages & press the mic to speak and translations will appear here:</label>
                 </div>
             </main>
 
             <footer class="app-footer">
+                <div class="language-controls">
+                    <div class="language-selection">
+                        <div class="source-language">
+                            <label>From:</label>
+                            <select id="sourceLanguageSelect" class="language-select">
+                                <option value="en-US">English</option>
+                                <option value="hi-IN">Hindi</option>
+                                <option value="bn-IN">Bengali</option>
+                                <option value="kn-IN">Kannada</option>
+                                <option value="ta-IN">Tamil</option>
+                                <option value="te-IN">Telugu</option>
+                                <option value="ml-IN">Malayalam</option>
+                            </select>
+                        </div>
+                        
+                        <button id="switchLanguages" class="switch-button" aria-label="Switch languages">
+                            ⇄
+                        </button>
+                
+                        <div class="target-language">
+                            <label>To:</label>
+                            <select id="targetLanguageSelect" class="language-select">
+                                <option value="kn-IN">Kannada</option>
+                                <option value="hi-IN">Hindi</option>
+                                <option value="bn-IN">Bengali</option>
+                                <option value="ta-IN">Tamil</option>
+                                <option value="te-IN">Telugu</option>
+                                <option value="ml-IN">Malayalam</option>
+                                <option value="en-US">English</option>
+                            </select>
+                        </div>
+                    </div>
                 <div class="control-buttons">
                     <button id="clearButton" class="action-button clear-button">
                         Clear Chat
@@ -83,6 +75,9 @@
                     <span id="recordingStatus" class="recording-status"></span>
                 </div>
                 <p class="copyright">Copyright © 2025 Bartalap</p>
+                <button id="installButton" class="install-button" style="display: none;">
+                        📱 Install App
+                    </button>
                 <a href="https://forms.gle/qwTPLWPHm3s9W2jP8" target="_blank" class="feedback-link">
                     Feedback
                 </a>
