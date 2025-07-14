@@ -495,7 +495,7 @@ patternBasedDetection(text) {
 
   setupRecognition() {
     this.recognition.continuous = true;
-    this.recognition.interimResults = false; // Enable interim results for better detection
+    this.recognition.interimResults = true; // Enable interim results for better detection
     this.recognition.maxAlternatives = 3; // Get multiple alternatives for better detection
     this.recognition.lang = this.sourceLang;
 
