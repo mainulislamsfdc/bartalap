@@ -4,24 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bartalap - Bridging Societies</title>
+    
+    <!-- PWA Configuration -->
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta name="theme-color" content="#150B35">
+    <meta name="background-color" content="#150B35">
+    
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Bartalap">
+    <link rel="apple-touch-icon" href="images/icon-192x192.png">
+    
+    <!-- Android PWA Support -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Bartalap">
+    
+    <!-- Windows PWA Support -->
+    <meta name="msapplication-TileColor" content="#150B35">
+    <meta name="msapplication-TileImage" content="images/icon-192x192.png">
+    <meta name="msapplication-navbutton-color" content="#150B35">
+    
+    <!-- General Meta Tags -->
+    <meta name="description" content="Real-time speech translation app for connecting societies and bridging languages">
+    <meta name="keywords" content="translation, speech, real-time, language, bridge, society">
+    <meta name="author" content="Bartalap">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icon-192x192.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- Preload important resources -->
+    <link rel="preload" href="bundle.js" as="script">
+    <link rel="preload" href="css/main.css" as="style">
 </head>
 <body>
     <div class="app-container">
         <div class="content-wrapper">
             <header class="app-header">
                 <div class="header-top">
-                     <img src="images/logo.png">
+                     <img src="images/logo.png" alt="Bartalap Logo">
                     <h1> Connecting Societies <br> Bridging Languages</h1>
                 </div>
-                
             </header>
 
             <main class="translation-container">
-                
                 <div id="translationHistory" class="translation-history">
                     <label>Select the from/to languages & press the mic to speak and translations will appear here:</label>
                 </div>
@@ -31,7 +62,7 @@
                 <div class="language-controls">
                     <div class="language-selection">
                         <div class="source-language">
-                            <label>From:</label>
+                           
                             <select id="sourceLanguageSelect" class="language-select">
                                 <option value="en-US">English</option>
                                 <option value="hi-IN">Hindi</option>
@@ -48,7 +79,7 @@
                         </button>
                 
                         <div class="target-language">
-                            <label>To:</label>
+                          
                             <select id="targetLanguageSelect" class="language-select">
                                 <option value="kn-IN">Kannada</option>
                                 <option value="hi-IN">Hindi</option>
@@ -75,17 +106,29 @@
                     <span id="recordingStatus" class="recording-status"></span>
                 </div>
                 <p class="copyright">Copyright © 2025 Bartalap</p>
-                <button id="installButton" class="install-button" >
-                        📱 Install App
-                    </button>
+                <!-- Install button - remove style="display: none;" -->
+                <button id="installButton" class="install-button">
+                    📱 Install App
+                </button>
                 <a href="https://forms.gle/qwTPLWPHm3s9W2jP8" target="_blank" class="feedback-link">
                     Feedback
                 </a>
             </footer>
-            
         </div>
     </div>
 
-        <script  src="bundle.js"></script>
+    <script src="bundle.js"></script>
+    <script>
+        // Register service worker immediately
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+    </script>
 </body>
 </html>

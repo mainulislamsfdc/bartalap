@@ -53,7 +53,7 @@
        flex-shrink: 0;
     animation: glow 2s infinite;
      align-self: center;
-      margin-top: 20px; 
+      margin-top: 1px; 
 }
 
 .mic-button {

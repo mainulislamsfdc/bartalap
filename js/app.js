@@ -17,11 +17,44 @@ class App {
         this.audioHandler = new AudioHandler();
         this.translationService = new TranslationService();
         this.uiController = new UIController();
+        
+        // Initialize auto-detection settings
+        this.initializeAutoDetection();
+        
         this.initialize();
         this.setupEventListeners();
 
         // Initialize PWA install functionality
         initializePWAInstall();
+
+        this.initializeGoogleAPI();
+    }
+
+     initializeGoogleAPI() {
+        // Get API key from environment or prompt user
+        const apiKey = localStorage.getItem('googleApiKey') ;//|| prompt('Enter Google Translation API key for auto-detection:');
+        
+        if (apiKey) {
+            localStorage.setItem('googleApiKey', apiKey);
+            this.audioHandler.setGoogleApiKey(apiKey);
+        } else {
+            console.warn('No Google API key provided, using pattern detection only');
+        }
+    }
+
+
+    initializeAutoDetection() {
+        // Check if auto-detection preference is stored
+        const autoDetectSetting = localStorage.getItem('autoDetectionEnabled');
+        const autoDetectEnabled = autoDetectSetting !== null ? JSON.parse(autoDetectSetting) : true;
+        
+        // Set auto-detection in audio handler
+        this.audioHandler.setAutoDetection(autoDetectEnabled);
+        
+        // Set up supported languages (you can make this configurable)
+        this.audioHandler.setSupportedLanguages(['en-US', 'kn-IN']);
+        
+        console.log('DEBUG: Auto-detection initialized:', autoDetectEnabled);
     }
 
     async initialize() {
@@ -169,6 +202,96 @@ class App {
         }, 10000);
     }
 
+    showLanguageDetectionNotification(detectedLang, newSourceLang, newTargetLang) {
+        const languageNames = {
+            'en-US': 'English',
+            'kn-IN': 'Kannada'
+        };
+
+        const notification = document.createElement('div');
+        notification.className = 'language-detection-notification';
+        notification.innerHTML = `
+            <div class="detection-content">
+                <span>🌐 Language detected: ${languageNames[detectedLang] || detectedLang}</span>
+                <span class="detection-detail">Switched to ${languageNames[newSourceLang]} → ${languageNames[newTargetLang]}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="detection-dismiss">×</button>
+            </div>
+        `;
+        
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            font-size: 14px;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        const detectionContent = notification.querySelector('.detection-content');
+        detectionContent.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            position: relative;
+        `;
+        
+        const detectionDetail = notification.querySelector('.detection-detail');
+        detectionDetail.style.cssText = `
+            font-size: 12px;
+            opacity: 0.8;
+        `;
+        
+        const dismissButton = notification.querySelector('.detection-dismiss');
+        dismissButton.style.cssText = `
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // Add slide-in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    }
+
     showError(message) {
         console.error('App Error:', message);
         // You can implement a proper error notification here
@@ -217,8 +340,8 @@ class App {
         });
 
         window.addEventListener('speechResult', async (event) => {
-            const { transcript, isFinal } = event.detail;
-            console.log('DEBUG: Speech result received:', { transcript, isFinal });
+            const { transcript, isFinal, detectedLanguage } = event.detail;
+            console.log('DEBUG: Speech result received:', { transcript, isFinal, detectedLanguage });
             
             this.uiController.updateCurrentText(transcript);
 
@@ -227,10 +350,11 @@ class App {
                     const sourceLang = this.uiController.sourceLanguageSelect.value;
                     const targetLang = this.uiController.targetLanguageSelect.value;
                     
-                   console.log('DEBUG: Translation request details:', {
+                    console.log('DEBUG: Translation request details:', {
                         text: transcript,
                         sourceLang,
-                        targetLang
+                        targetLang,
+                        detectedLanguage
                     });
 
                     const translation = await this.translationService.translateText(
@@ -245,7 +369,8 @@ class App {
                         original: transcript,
                         translated: translation.translation,
                         transliteration: translation.pronunciation,
-                        timestamp: new Date()
+                        timestamp: new Date(),
+                        detectedLanguage: detectedLanguage
                     });
 
                 } catch (error) {
@@ -266,6 +391,18 @@ class App {
             const { sourceLang, targetLang } = event.detail;
             console.log('DEBUG: Language change event:', { sourceLang, targetLang });
             this.audioHandler.setLanguages(sourceLang, targetLang);
+        });
+
+        // Add auto language detection event listener
+        window.addEventListener('autoLanguageDetected', (event) => {
+            const { detectedLang, newSourceLang, newTargetLang } = event.detail;
+            console.log('DEBUG: Auto language detected:', { detectedLang, newSourceLang, newTargetLang });
+            
+            // Update UI to reflect the detected language
+            this.uiController.updateLanguageSelections(newSourceLang, newTargetLang);
+            
+            // Show notification to user about language switch
+            this.showLanguageDetectionNotification(detectedLang, newSourceLang, newTargetLang);
         });
     }
 }
